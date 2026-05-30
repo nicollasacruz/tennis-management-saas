@@ -4,7 +4,7 @@
 
 **Goal:** Corrigir o workflow de CI/CD e criar o `.env` inicial no clone da VPS sem sobrescrever segredos existentes.
 
-**Architecture:** O workflow passa a validar o caminho de deploy, correr testes de API, evitar health check por porta publica fixa e remover a migracao Prisma duplicada. O PostgreSQL desta stack fica interno ao Docker, sem publicar a porta `5432` na VPS. O `.env` da VPS e criado a partir do ambiente antigo quando disponivel, preservando segredos e ajustando apenas valores operacionais do novo SaaS.
+**Architecture:** O workflow passa a validar a configuracao de deploy, correr testes de API, evitar health check por porta publica fixa e remover a migracao Prisma duplicada. O PostgreSQL desta stack fica interno ao Docker, sem publicar a porta `5432` na VPS. O `.env` da VPS e criado a partir do ambiente antigo quando disponivel, preservando segredos e ajustando apenas valores operacionais do novo SaaS.
 
 **Tech Stack:** GitHub Actions, Docker Compose, NestJS, Prisma, Next.js, jwilder/nginx-proxy, Ubuntu VPS.
 
@@ -26,22 +26,38 @@ Inserir apos o passo `Typecheck`:
 
 - [ ] **Step 2: Validar `DEPLOY_PATH` antes do deploy**
 
-No job `deploy`, expor o secret como variavel de ambiente e validar antes de `cd`:
+No job `deploy`, expor a configuracao como variaveis de ambiente com defaults nao sensiveis:
 
 ```yaml
     env:
-      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || '62.169.28.198' }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/root/projects/tennis-management-saas' }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
 ```
 
-Script:
+Adicionar um passo de validacao antes da action SSH:
 
 ```sh
-if [ -z "${DEPLOY_PATH:-}" ]; then
-  echo "DEPLOY_PATH nao configurado."
+missing=0
+
+for var in DEPLOY_HOST DEPLOY_USER DEPLOY_PORT DEPLOY_PATH DEPLOY_SSH_KEY; do
+  if [ -z "$(printenv "$var")" ]; then
+    echo "$var nao configurado."
+    missing=1
+  fi
+done
+
+if [ "$missing" -ne 0 ]; then
   exit 1
 fi
+```
 
-cd "$DEPLOY_PATH"
+Na action SSH, remover `script_stop` e passar `DEPLOY_PATH` para o ambiente remoto:
+
+```yaml
+          envs: DEPLOY_PATH
 ```
 
 - [ ] **Step 3: Remover dependencia de `WEB_PORT` no health check**
