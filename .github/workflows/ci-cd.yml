@@ -39,6 +39,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Testes API
+        run: npm --workspace apps/api run test
+
       - name: Build
         run: npm run build
 
@@ -49,6 +52,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
     permissions: {}
+    env:
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
     steps:
       - name: Deploy com health check e rollback
         uses: appleboy/ssh-action@v1.2.2
@@ -60,10 +65,14 @@ jobs:
           script_stop: false
           script: |
             set -e
-            cd ${{ secrets.DEPLOY_PATH }}
+            if [ -z "${DEPLOY_PATH:-}" ]; then
+              echo "DEPLOY_PATH não configurado."
+              exit 1
+            fi
 
-            WEB_PORT="${WEB_PORT:-8080}"
-            HEALTH_URL="http://localhost:${WEB_PORT}/api/health"
+            cd "$DEPLOY_PATH"
+
+            HEALTH_CHECK='fetch("http://127.0.0.1/api/health").then((res) => { if (res.status !== 200) process.exit(1); }).catch(() => process.exit(1));'
             MAX_RETRIES=12
             RETRY_INTERVAL=5
 
@@ -78,24 +87,19 @@ jobs:
             echo "🐳 A reconstruir containers..."
             docker compose up -d --build
 
-            echo "🗄️  A correr migrações Prisma..."
-            docker compose exec -T api npx prisma migrate deploy
-
             echo "🏥 A verificar saúde da aplicação..."
             for i in $(seq 1 $MAX_RETRIES); do
-              STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" || true)
-              if [ "$STATUS" = "200" ]; then
-                echo "✅ Aplicação saudável (HTTP $STATUS)"
+              if docker compose exec -T web node -e "$HEALTH_CHECK"; then
+                echo "✅ Aplicação saudável"
                 exit 0
               fi
-              echo "⏳ Tentativa $i/$MAX_RETRIES — HTTP $STATUS — a aguardar ${RETRY_INTERVAL}s..."
+              echo "⏳ Tentativa $i/$MAX_RETRIES — a aguardar ${RETRY_INTERVAL}s..."
               sleep $RETRY_INTERVAL
             done
 
             echo "❌ Health check falhou após $((MAX_RETRIES * RETRY_INTERVAL))s. A fazer rollback para $PREV_REV..."
             git checkout "$PREV_REV"
             docker compose up -d --build
-            docker compose exec -T api npx prisma migrate deploy
 
             echo "🔁 Rollback concluído. Aplicação restaurada para revisão $(git rev-parse --short HEAD)."
             exit 1
