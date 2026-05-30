@@ -1,0 +1,140 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #f4f7ed;
+  --foreground: #183223;
+
+  --ink: #0f1f15;
+  --ink-soft: #1a3324;
+  --paper: #f7f9f0;
+  --cream: #ffffff;
+  --border: #dde6c7;
+  --border-soft: #e7eed3;
+  --muted: #566857;
+  --accent: #a8e220;
+  --accent-strong: #3f6607;
+  --accent-soft: #e7f6c2;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --font-sans: 'Manrope', Arial, Helvetica, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+html,
+body {
+  min-height: 100%;
+  height: 100%;
+}
+
+body {
+  background: radial-gradient(circle at 10% 20%, rgba(198, 240, 92, 0.15), transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(151, 206, 42, 0.1), transparent 40%),
+    #f4f7ed;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes flashSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes marqueeY {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-reveal-delay='1'] { transition-delay: 80ms; }
+[data-reveal-delay='2'] { transition-delay: 160ms; }
+[data-reveal-delay='3'] { transition-delay: 240ms; }
+[data-reveal-delay='4'] { transition-delay: 320ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bdd383;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #97ce2a;
+}

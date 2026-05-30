@@ -1,0 +1,12 @@
+.DS_Store
+.idea/
+.claude/settings.local.json
+.env
+.env.local
+node_modules
+.next
+*.tsbuildinfo
+dist
+coverage
+apps/api/dist
+apps/web/dist

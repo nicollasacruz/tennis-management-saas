@@ -1,0 +1,161 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  evolution-postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: ${EVOLUTION_POSTGRES_PASSWORD:-evolution_secret}
+      POSTGRES_USER: ${EVOLUTION_POSTGRES_USER:-evolution}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${EVOLUTION_POSTGRES_USER:-evolution} -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - evolution_postgres_data:/var/lib/postgresql/data
+      - ./docker/evolution-postgres/init:/docker-entrypoint-initdb.d:ro
+
+  evolution-go:
+    image: evoapicloud/evolution-go:latest
+    restart: unless-stopped
+    depends_on:
+      evolution-postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      CLIENT_NAME: ${EVOLUTION_GO_CLIENT_NAME:-esaf}
+      GLOBAL_API_KEY: ${EVOLUTION_GO_API_KEY:-}
+      POSTGRES_AUTH_DB: postgresql://${EVOLUTION_POSTGRES_USER:-evolution}:${EVOLUTION_POSTGRES_PASSWORD:-evolution_secret}@evolution-postgres:5432/evogo_auth?sslmode=disable
+      POSTGRES_USERS_DB: postgresql://${EVOLUTION_POSTGRES_USER:-evolution}:${EVOLUTION_POSTGRES_PASSWORD:-evolution_secret}@evolution-postgres:5432/evogo_users?sslmode=disable
+      DATABASE_SAVE_MESSAGES: ${EVOLUTION_GO_DATABASE_SAVE_MESSAGES:-false}
+      WADEBUG: ${EVOLUTION_GO_WADEBUG:-INFO}
+      LOGTYPE: ${EVOLUTION_GO_LOGTYPE:-console}
+      CONNECT_ON_STARTUP: ${EVOLUTION_GO_CONNECT_ON_STARTUP:-true}
+      VIRTUAL_HOST: ${EVOLUTION_GO_VIRTUAL_HOST:-evolution.esaf.run.place}
+      VIRTUAL_PORT: 8080
+      LETSENCRYPT_HOST: ${EVOLUTION_GO_VIRTUAL_HOST:-evolution.esaf.run.place}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-nicollasacruz@gmail.com}
+    expose:
+      - "8080"
+    networks:
+      - default
+      - reverse-proxy
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      ESAF_LOGO_URL: ${ESAF_LOGO_URL}
+      FRONTEND_ORIGIN: "*"
+      SMTP_ENABLED: ${SMTP_ENABLED:-true}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-false}
+      SMTP_REJECT_UNAUTHORIZED: ${SMTP_REJECT_UNAUTHORIZED:-true}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-}
+      SMTP_REPLY_TO: ${SMTP_REPLY_TO:-}
+      EMAIL_QUEUE_WORKER_ENABLED: ${EMAIL_QUEUE_WORKER_ENABLED:-true}
+      EMAIL_QUEUE_POLL_MS: ${EMAIL_QUEUE_POLL_MS:-5000}
+      EMAIL_QUEUE_BATCH_SIZE: ${EMAIL_QUEUE_BATCH_SIZE:-5}
+      EMAIL_QUEUE_MAX_ATTEMPTS: ${EMAIL_QUEUE_MAX_ATTEMPTS:-3}
+      EMAIL_QUEUE_RETRY_BASE_SECONDS: ${EMAIL_QUEUE_RETRY_BASE_SECONDS:-60}
+      EMAIL_QUEUE_STALE_AFTER_SECONDS: ${EMAIL_QUEUE_STALE_AFTER_SECONDS:-300}
+      EVOLUTION_GO_BASE_URL: ${EVOLUTION_GO_BASE_URL:-http://evolution-go:8080}
+      EVOLUTION_GO_API_KEY: ${EVOLUTION_GO_API_KEY:-}
+      EVOLUTION_GO_INSTANCE_ID: ${EVOLUTION_GO_INSTANCE_ID:-}
+      EVOLUTION_GO_INSTANCE_TOKEN: ${EVOLUTION_GO_INSTANCE_TOKEN:-}
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-https://esaf.run.place/api}
+      RECEIPT_PUBLIC_TOKEN_SECRET: ${RECEIPT_PUBLIC_TOKEN_SECRET:-}
+      WHATSAPP_QUEUE_WORKER_ENABLED: ${WHATSAPP_QUEUE_WORKER_ENABLED:-true}
+      WHATSAPP_QUEUE_POLL_MS: ${WHATSAPP_QUEUE_POLL_MS:-5000}
+      WHATSAPP_QUEUE_BATCH_SIZE: ${WHATSAPP_QUEUE_BATCH_SIZE:-5}
+      WHATSAPP_QUEUE_MAX_ATTEMPTS: ${WHATSAPP_QUEUE_MAX_ATTEMPTS:-3}
+      WHATSAPP_QUEUE_RETRY_BASE_SECONDS: ${WHATSAPP_QUEUE_RETRY_BASE_SECONDS:-60}
+      WHATSAPP_QUEUE_STALE_AFTER_SECONDS: ${WHATSAPP_QUEUE_STALE_AFTER_SECONDS:-300}
+      PORT: 3000
+      RECEIPT_ISSUER: ${RECEIPT_ISSUER}
+      RECEIPT_SIGNATURE_LABEL: ${RECEIPT_SIGNATURE_LABEL}
+    expose:
+      - "3000"
+    restart: unless-stopped
+    networks:
+      default:
+        aliases:
+          - tenis-management-api-internal
+      reverse-proxy:
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    restart: unless-stopped
+    environment:
+        API_BASE_URL: http://tenis-management-api-internal:3000
+        NEXT_PUBLIC_API_BASE_URL: /api
+        VIRTUAL_HOST: esaf.run.place
+        VIRTUAL_PORT: 80
+        LETSENCRYPT_HOST: esaf.run.place
+        LETSENCRYPT_EMAIL: nicollasacruz@gmail.com
+    networks:
+        - default
+        - reverse-proxy
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      VIRTUAL_HOST: pgadmin.esaf.run.place
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: pgadmin.esaf.run.place
+      LETSENCRYPT_EMAIL: nicollasacruz@gmail.com
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - default
+      - reverse-proxy
+    depends_on:
+      - postgres
+volumes:
+  postgres_data:
+  evolution_postgres_data:
+  pgadmin_data:
+
+networks:
+    default:
+      driver: bridge
+    reverse-proxy:
+        external:  true
