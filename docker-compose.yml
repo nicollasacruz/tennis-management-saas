@@ -84,6 +84,8 @@ services:
       EMAIL_QUEUE_MAX_ATTEMPTS: ${EMAIL_QUEUE_MAX_ATTEMPTS:-3}
       EMAIL_QUEUE_RETRY_BASE_SECONDS: ${EMAIL_QUEUE_RETRY_BASE_SECONDS:-60}
       EMAIL_QUEUE_STALE_AFTER_SECONDS: ${EMAIL_QUEUE_STALE_AFTER_SECONDS:-300}
+      SAAS_ROOT_DOMAIN: ${SAAS_ROOT_DOMAIN:-tenis.esaf.run.place}
+      DEFAULT_TENANT_SLUG: ${DEFAULT_TENANT_SLUG:-esaf}
       EVOLUTION_GO_BASE_URL: ${EVOLUTION_GO_BASE_URL:-http://evolution-go:8080}
       EVOLUTION_GO_API_KEY: ${EVOLUTION_GO_API_KEY:-}
       EVOLUTION_GO_INSTANCE_ID: ${EVOLUTION_GO_INSTANCE_ID:-}
@@ -120,10 +122,11 @@ services:
     environment:
         API_BASE_URL: http://tenis-management-api-internal:3000
         NEXT_PUBLIC_API_BASE_URL: /api
-        VIRTUAL_HOST: esaf.run.place
+        SAAS_ROOT_DOMAIN: ${SAAS_ROOT_DOMAIN:-tenis.esaf.run.place}
+        VIRTUAL_HOST: ${WEB_VIRTUAL_HOSTS:-app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place}
         VIRTUAL_PORT: 80
-        LETSENCRYPT_HOST: esaf.run.place
-        LETSENCRYPT_EMAIL: nicollasacruz@gmail.com
+        LETSENCRYPT_HOST: ${WEB_LETSENCRYPT_HOSTS:-app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place}
+        LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-admin@esaf.run.place}
     networks:
         - default
         - reverse-proxy
