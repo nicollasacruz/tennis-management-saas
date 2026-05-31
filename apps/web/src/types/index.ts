@@ -217,6 +217,13 @@ export type MonthlyChargeGenerationResult = {
 
 export type User = {
   id: string;
+  tenantId: string;
+  tenant?: {
+    id: string;
+    name: string;
+    primaryHost: string;
+    slug: string;
+  };
   email: string;
   fullName: string;
   role: string;
