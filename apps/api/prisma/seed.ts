@@ -28,9 +28,15 @@ async function main() {
   });
 
   // Migra a instância Evolution global (env) para a config por-tenant do esaf,
-  // preservando o WhatsApp atual. Servidor Evolution continua partilhado.
-  const evolutionInstanceId = process.env.EVOLUTION_GO_INSTANCE_ID?.trim();
-  const evolutionInstanceToken = process.env.EVOLUTION_GO_INSTANCE_TOKEN?.trim();
+  // preservando o WhatsApp atual. Servidor Evolution API continua partilhado.
+  const evolutionInstanceId = (
+    process.env.EVOLUTION_API_INSTANCE_ID ??
+    process.env.EVOLUTION_GO_INSTANCE_ID
+  )?.trim();
+  const evolutionInstanceToken = (
+    process.env.EVOLUTION_API_INSTANCE_TOKEN ??
+    process.env.EVOLUTION_GO_INSTANCE_TOKEN
+  )?.trim();
   const hasEvolutionEnv =
     !!evolutionInstanceId &&
     evolutionInstanceId !== 'CHANGE_ME' &&

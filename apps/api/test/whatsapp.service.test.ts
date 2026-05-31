@@ -2,12 +2,12 @@ import 'reflect-metadata';
 import assert from 'node:assert/strict';
 import { WhatsappService } from '../src/whatsapp/whatsapp.service';
 
-type Creds = { instanceId: string; instanceToken: string } | null;
+type Creds = { instanceName: string; instanceToken: string } | null;
 
 function makeService(opts: { baseUrl?: string; tenantId?: string; creds: Creds }) {
   const config = {
     get: (key: string) =>
-      key === 'EVOLUTION_GO_BASE_URL' ? opts.baseUrl : undefined,
+      key === 'EVOLUTION_API_BASE_URL' ? opts.baseUrl : undefined,
   } as any;
   const tenantContext = {
     getTenantIdOrThrow: () => {
@@ -40,12 +40,12 @@ async function main() {
     makeService({
       baseUrl: undefined,
       tenantId: 't1',
-      creds: { instanceId: 'i', instanceToken: 'tok' },
+      creds: { instanceName: 'i', instanceToken: 'tok' },
     }).sendDocument(payload),
-    /EVOLUTION_GO_BASE_URL/,
+    /EVOLUTION_API_BASE_URL/,
   );
 
-  // Com credenciais → usa instanceId/token do tenant no envio
+  // Com credenciais → usa instanceName/token do tenant no envio
   let captured: { url: string; init: any } | null = null;
   const originalFetch = global.fetch;
   global.fetch = (async (url: string, init: any) => {
@@ -57,14 +57,21 @@ async function main() {
     const result = await makeService({
       baseUrl: 'http://evo',
       tenantId: 't1',
-      creds: { instanceId: 'INST', instanceToken: 'TOK' },
+      creds: { instanceName: 'INST', instanceToken: 'TOK' },
     }).sendDocument(payload);
 
     assert.equal(result.delivered, true);
     assert.ok(captured, 'fetch deveria ter sido chamado');
-    assert.equal(captured!.url, 'http://evo/send/media');
+    assert.equal(captured!.url, 'http://evo/message/sendMedia/INST');
     assert.equal(captured!.init.headers.apikey, 'TOK');
-    assert.ok(String(captured!.init.body).includes('"id":"INST"'));
+    const body = JSON.parse(String(captured!.init.body));
+    assert.deepEqual(body, {
+      number: '910000001',
+      mediatype: 'document',
+      mimetype: 'application/pdf',
+      media: 'https://exemplo/recibo.pdf',
+      fileName: 'recibo.pdf',
+    });
   } finally {
     global.fetch = originalFetch;
   }

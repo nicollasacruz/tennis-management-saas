@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { TenantContext } from '../tenants/tenant-context';
 import { UpdateWhatsappConfigDto } from './dto/update-whatsapp-config.dto';
+import { EvolutionApiService } from './evolution-api.service';
 
 export interface WhatsappSendCredentials {
-  instanceId: string;
+  instanceName: string;
   instanceToken: string;
 }
 
@@ -18,6 +19,7 @@ export class TenantWhatsappConfigService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tenantContext: TenantContext,
+    private readonly evolutionApi: EvolutionApiService,
   ) {}
 
   /** Credenciais para envio; `null` se a instância ainda não estiver configurada. */
@@ -28,11 +30,13 @@ export class TenantWhatsappConfigService {
       where: { tenantId },
     });
 
-    if (!config?.instanceId || !config?.instanceToken) {
+    const instanceName = config?.instanceName ?? config?.instanceId;
+
+    if (!instanceName || !config?.instanceToken) {
       return null;
     }
 
-    return { instanceId: config.instanceId, instanceToken: config.instanceToken };
+    return { instanceName, instanceToken: config.instanceToken };
   }
 
   /** Vista mascarada da config do tenant atual (não devolve o token). */
@@ -56,7 +60,7 @@ export class TenantWhatsappConfigService {
     }
 
     return {
-      configured: !!(config.instanceId && config.instanceToken),
+      configured: !!((config.instanceName ?? config.instanceId) && config.instanceToken),
       instanceId: config.instanceId,
       instanceName: config.instanceName,
       phoneNumber: config.phoneNumber,
@@ -97,5 +101,56 @@ export class TenantWhatsappConfigService {
     });
 
     return this.getForCurrentTenant();
+  }
+
+  async createOrConnectForCurrentTenant() {
+    const tenantId = this.tenantContext.getTenantIdOrThrow();
+    const [tenant, config] = await Promise.all([
+      this.prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } }),
+      this.prisma.tenantWhatsappConfig.findUnique({ where: { tenantId } }),
+    ]);
+    const instanceName =
+      config?.instanceName?.trim() || this.buildInstanceName(tenant.slug, tenant.id);
+
+    const connection = await this.evolutionApi.createOrConnectInstance({
+      instanceName,
+      instanceToken: config?.instanceToken,
+    });
+
+    await this.prisma.tenantWhatsappConfig.upsert({
+      where: { tenantId },
+      create: {
+        tenantId,
+        instanceId: connection.instanceId,
+        instanceToken: connection.instanceToken,
+        instanceName: connection.instanceName,
+        phoneNumber: connection.phoneNumber,
+        status: connection.status,
+        lastConnectedAt: connection.status === 'CONNECTED' ? new Date() : null,
+      },
+      update: {
+        instanceId: connection.instanceId,
+        instanceToken: connection.instanceToken,
+        instanceName: connection.instanceName,
+        phoneNumber: connection.phoneNumber,
+        status: connection.status,
+        lastConnectedAt: connection.status === 'CONNECTED' ? new Date() : config?.lastConnectedAt,
+      },
+    });
+
+    return {
+      config: await this.getForCurrentTenant(),
+      qrCodeBase64: connection.qrCodeBase64,
+      qrCodeText: connection.qrCodeText,
+    };
+  }
+
+  private buildInstanceName(slug: string, tenantId: string) {
+    const normalized = slug
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    return normalized ? `tenant-${normalized}` : `tenant-${tenantId.slice(0, 8)}`;
   }
 }

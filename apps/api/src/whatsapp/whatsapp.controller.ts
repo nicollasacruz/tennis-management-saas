@@ -40,6 +40,13 @@ export class WhatsappController {
     return this.whatsappConfigService.upsertForCurrentTenant(dto);
   }
 
+  @Post('connect')
+  @UseGuards(RolesGuard)
+  @Roles(SystemUserRole.ADMIN)
+  connect() {
+    return this.whatsappConfigService.createOrConnectForCurrentTenant();
+  }
+
   @Post('test')
   async test(@Body() dto: TestWhatsappDto) {
     const number = normalizeWhatsappNumber(dto.number);
