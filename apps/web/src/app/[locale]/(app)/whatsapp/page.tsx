@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -15,7 +15,6 @@ import {
   connectWhatsappInstance,
   getWhatsappConfig,
   sendWhatsappTest,
-  updateWhatsappConfig,
 } from '@/lib/api';
 import { useAuth } from '@/components/auth-provider';
 import { WhatsappConfig, WhatsappConnectionStatus } from '@/types';
@@ -53,42 +52,10 @@ export default function WhatsappPage() {
     queryFn: getWhatsappConfig,
   });
 
-  const [instanceName, setInstanceName] = useState('');
-  const [instanceId, setInstanceId] = useState('');
-  const [instanceToken, setInstanceToken] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
   const [testNumber, setTestNumber] = useState('');
   const [qrCodeBase64, setQrCodeBase64] = useState<string | null>(null);
   const [qrCodeText, setQrCodeText] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (config) {
-      setInstanceName(config.instanceName ?? '');
-      setInstanceId(config.instanceId ?? '');
-      setPhoneNumber(config.phoneNumber ?? '');
-    }
-  }, [config]);
-
-  const saveMutation = useMutation({
-    mutationFn: () =>
-      updateWhatsappConfig({
-        instanceName,
-        instanceId,
-        phoneNumber,
-        ...(instanceToken.trim() ? { instanceToken: instanceToken.trim() } : {}),
-      }),
-    onSuccess: () => {
-      setInstanceToken('');
-      setFeedback('Configuração guardada.');
-      queryClient.invalidateQueries({ queryKey: ['whatsapp-config'] });
-    },
-    onError: (error: unknown) => {
-      setFeedback(
-        error instanceof Error ? error.message : 'Não foi possível guardar.',
-      );
-    },
-  });
 
   const connectMutation = useMutation({
     mutationFn: connectWhatsappInstance,
@@ -155,7 +122,7 @@ export default function WhatsappPage() {
       {!isAdmin && (
         <div className="flex items-center gap-2 rounded-lg border border-[#f0d9c1] bg-[#fff3dd] px-4 py-3 text-sm font-semibold text-[#8d5c10]">
           <AlertCircle className="h-4 w-4" />
-          Apenas administradores podem alterar a configuração.
+          Apenas administradores podem criar ou atualizar a ligação.
         </div>
       )}
 
@@ -179,79 +146,46 @@ export default function WhatsappPage() {
               )}
             </div>
 
-            <form
-              className="grid gap-4 md:grid-cols-2"
-              onSubmit={(event) => {
-                event.preventDefault();
-                setFeedback(null);
-                saveMutation.mutate();
-              }}
-            >
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-[#183223]">
-                Nome da instância
-                <input
-                  value={instanceName}
-                  onChange={(event) => setInstanceName(event.target.value)}
-                  disabled={!isAdmin}
-                  placeholder="ex.: esaf"
-                  className={inputClass}
-                />
-              </label>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-lg border border-[#e3edcf] bg-[#f8fbf2] px-3 py-2">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#7a8b79]">
+                  Nome da instância
+                </p>
+                <p className="mt-1 break-all text-sm font-semibold text-[#183223]">
+                  {config?.instanceName ?? 'Gerido automaticamente'}
+                </p>
+              </div>
 
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-[#183223]">
-                Telefone
-                <input
-                  value={phoneNumber}
-                  onChange={(event) => setPhoneNumber(event.target.value)}
-                  disabled={!isAdmin}
-                  placeholder="ex.: +351910000000"
-                  className={inputClass}
-                />
-              </label>
+              <div className="rounded-lg border border-[#e3edcf] bg-[#f8fbf2] px-3 py-2">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#7a8b79]">
+                  ID da instância
+                </p>
+                <p className="mt-1 break-all text-sm font-semibold text-[#183223]">
+                  {config?.instanceId ?? 'Será preenchido após criar o QR code'}
+                </p>
+              </div>
 
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-[#183223]">
-                ID da instância
-                <input
-                  value={instanceId}
-                  onChange={(event) => setInstanceId(event.target.value)}
-                  disabled={!isAdmin}
-                  placeholder="ID da instância na Evolution"
-                  className={inputClass}
-                />
-              </label>
+              <div className="rounded-lg border border-[#e3edcf] bg-[#f8fbf2] px-3 py-2">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#7a8b79]">
+                  Telefone
+                </p>
+                <p className="mt-1 break-all text-sm font-semibold text-[#183223]">
+                  {config?.phoneNumber ?? 'Será identificado após a ligação'}
+                </p>
+              </div>
 
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-[#183223]">
-                Token da instância
-                <input
-                  type="password"
-                  value={instanceToken}
-                  onChange={(event) => setInstanceToken(event.target.value)}
-                  disabled={!isAdmin}
-                  placeholder={
-                    config?.hasToken
-                      ? '•••••••• (deixe vazio para manter)'
-                      : 'Token da instância'
-                  }
-                  className={inputClass}
-                />
-              </label>
-
-              {isAdmin && (
-                <div className="md:col-span-2">
-                  <button
-                    type="submit"
-                    disabled={saveMutation.isPending}
-                    className="inline-flex items-center gap-2 rounded-lg bg-[#183223] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#24410b] disabled:opacity-50"
-                  >
-                    {saveMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                    Guardar configuração
-                  </button>
-                </div>
-              )}
-            </form>
+              <div className="rounded-lg border border-[#e3edcf] bg-[#f8fbf2] px-3 py-2">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#7a8b79]">
+                  Token
+                </p>
+                <p className="mt-1 text-sm font-semibold text-[#183223]">
+                  {config?.hasToken ? 'Gerido pela aplicação' : 'Será gerado pela aplicação'}
+                </p>
+              </div>
+            </div>
 
             <p className="mt-4 text-xs text-[#7a8b79]">
-              Servidor Evolution partilhado; cada organização usa a sua própria instância.
+              Servidor Evolution partilhado; cada organização usa a sua própria instância. As credenciais são geridas pela aplicação.
               Última atualização: {formatDateTime(config?.updatedAt ?? null)}.
             </p>
           </div>

@@ -19,6 +19,7 @@ EVOLUTION_API_VIRTUAL_HOST=tenisevolution.esaf.run.place
 - As variaveis antigas `EVOLUTION_GO_*` ficam apenas como fallback de transicao no Compose e no seed.
 - O envio de documentos passa a usar a rota Evolution API v2 `POST /message/sendMedia/{instance}`.
 - O painel WhatsApp passa a ter acao de ligacao por QR code. A API cria ou reutiliza a instancia do tenant em `POST /instance/create`, pede o QR em `GET /instance/connect/{instance}` e grava `instanceName`, `instanceId` e `instanceToken` em `TenantWhatsappConfig`.
+- O utilizador nao escolhe `instanceId` nem `instanceToken` no fluxo normal. O token e gerado pela aplicacao e o ID e preenchido com o valor devolvido pela Evolution API.
 
 ## Variaveis novas
 

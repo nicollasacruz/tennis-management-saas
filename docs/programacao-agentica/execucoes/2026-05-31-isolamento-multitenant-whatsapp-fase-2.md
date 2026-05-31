@@ -31,7 +31,7 @@ Referência: `docs/programacao-agentica/planos/2026-05-31-isolamento-multitenant
 - Seed migra a instância global (env) para a config do esaf; `.env.example` documenta que `EVOLUTION_API_INSTANCE_ID/TOKEN` passam a ser fallback/seed. As variaveis antigas `EVOLUTION_GO_*` continuam suportadas apenas como transicao.
 
 ### Frontend
-- Nova página `/whatsapp` (painel): vê estado/instância, grava config (apenas ADMIN), cria/atualiza QR code e envia teste. Item de navegação adicionado.
+- Nova página `/whatsapp` (painel): vê estado/instância, cria/atualiza QR code e envia teste. O utilizador não escolhe `instanceId` nem `instanceToken`; estas credenciais são geridas pela aplicação. Item de navegação adicionado.
 
 ### Endurecimento de segurança (repo público)
 - Removido o segredo JWT hardcoded público (`'esaf-secret-key-change-in-production'`). Novo `auth/jwt-secret.ts#resolveJwtSecret`: em produção **lança** se `JWT_SECRET` ausente; em dev usa fallback local. Usado por `auth.module.ts` (assinatura) e `jwt.strategy.ts` (verificação).
