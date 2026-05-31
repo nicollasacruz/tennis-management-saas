@@ -20,7 +20,7 @@
 - Atualizado `.env.example` com `SAAS_ROOT_DOMAIN`, `DEFAULT_TENANT_SLUG`, `WEB_VIRTUAL_HOSTS`, `WEB_LETSENCRYPT_HOSTS` e `LETSENCRYPT_EMAIL`.
 - Adicionado teste de normalizacao e extracao de tenant a partir do host.
 - Mantida a correcao de `.dockerignore` para excluir artefactos `.next` e `*.tsbuildinfo` do contexto Docker.
-- Adicionados `profiles: ["evolution"]` aos servicos `evolution-go` e `evolution-postgres`, mantendo o Evolution fora do deploy padrao.
+- Adicionados `profiles: ["evolution"]` aos servicos `evolution-api` e `evolution-postgres`, mantendo o Evolution fora do deploy padrao.
 - Atualizado o host configurado do Evolution para `tenisevolution.esaf.run.place`.
 - Limitado `WEB_LETSENCRYPT_HOSTS` a `tenis.esaf.run.place`, porque os subdominios `app`, `demo` e `esaf` ainda nao tinham DNS ativo e bloqueavam a emissao do certificado.
 

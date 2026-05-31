@@ -6,7 +6,7 @@
 npm --workspace apps/api run test
 ```
 
-Resultado: sucesso.
+Resultado: sucesso. Inclui teste do cliente `EvolutionApiService` para criação/conexão de instância e QR code.
 
 ```bash
 npm --workspace apps/api run typecheck
@@ -85,7 +85,13 @@ pgadmin
 web
 ```
 
-Os servicos `evolution-go` e `evolution-postgres` nao aparecem no deploy padrao; so sobem quando o profile `evolution` for ativado.
+Os servicos `evolution-api` e `evolution-postgres` nao aparecem no deploy padrao; so sobem quando o profile `evolution` for ativado.
+
+```bash
+docker compose --profile evolution exec -T evolution-api wget -qO- --header apikey:dev-evolution-global-key http://127.0.0.1:8080/
+```
+
+Resultado: sucesso local. A Evolution API v2.1.1 respondeu `status=200`.
 
 ## Verificacao GitHub Actions
 

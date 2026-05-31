@@ -26,11 +26,11 @@ WEB_LETSENCRYPT_HOSTS=tenis.esaf.run.place
 O Evolution permanece pausado por defeito e o host reservado para ele e:
 
 ```env
-EVOLUTION_GO_VIRTUAL_HOST=tenisevolution.esaf.run.place
+EVOLUTION_API_VIRTUAL_HOST=tenisevolution.esaf.run.place
 ```
 
 ## Consequencias
 
 - `https://tenis.esaf.run.place` tem TLS valido e responde com `HTTP/2 200`.
 - Os subdominios `app`, `demo` e `esaf` so devem ser adicionados a `WEB_LETSENCRYPT_HOSTS` depois de existirem no DNS.
-- O deploy padrao nao deve subir Evolution; os servicos `evolution-go` e `evolution-postgres` ficam atras do profile `evolution`.
+- O deploy padrao nao deve subir Evolution; os servicos `evolution-api` e `evolution-postgres` ficam atras do profile `evolution`.

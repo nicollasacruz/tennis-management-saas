@@ -26,11 +26,12 @@ Referência: `docs/programacao-agentica/planos/2026-05-31-isolamento-multitenant
 ### WhatsApp por tenant
 - `TenantWhatsappConfigService` (cliente base + filtro explícito por tenant): leitura mascarada, upsert idempotente (token só muda quando enviado).
 - Endpoints `GET /whatsapp/config` (autenticado) e `PUT /whatsapp/config` (ADMIN via `RolesGuard`/`@Roles`).
-- `WhatsappService.sendDocument` resolve a instância (instanceId/token) do tenant atual; `EVOLUTION_GO_BASE_URL` continua global (servidor partilhado).
-- Seed migra a instância global (env) para a config do esaf; `.env.example` documenta que `EVOLUTION_GO_INSTANCE_ID/TOKEN` passam a ser fallback/seed.
+- Endpoint `POST /whatsapp/connect` (ADMIN) cria/reutiliza a instância do tenant na Evolution API e devolve QR code para ligação.
+- `WhatsappService.sendDocument` resolve a instância (instanceName/token) do tenant atual; `EVOLUTION_API_BASE_URL` continua global (servidor partilhado).
+- Seed migra a instância global (env) para a config do esaf; `.env.example` documenta que `EVOLUTION_API_INSTANCE_ID/TOKEN` passam a ser fallback/seed. As variaveis antigas `EVOLUTION_GO_*` continuam suportadas apenas como transicao.
 
 ### Frontend
-- Nova página `/whatsapp` (painel): vê estado/instância, grava config (apenas ADMIN) e envia teste. Item de navegação adicionado.
+- Nova página `/whatsapp` (painel): vê estado/instância, grava config (apenas ADMIN), cria/atualiza QR code e envia teste. Item de navegação adicionado.
 
 ### Endurecimento de segurança (repo público)
 - Removido o segredo JWT hardcoded público (`'esaf-secret-key-change-in-production'`). Novo `auth/jwt-secret.ts#resolveJwtSecret`: em produção **lança** se `JWT_SECRET` ausente; em dev usa fallback local. Usado por `auth.module.ts` (assinatura) e `jwt.strategy.ts` (verificação).

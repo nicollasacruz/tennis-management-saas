@@ -78,14 +78,14 @@ SAAS_ROOT_DOMAIN=tenis.esaf.run.place
 WEB_VIRTUAL_HOSTS=tenis.esaf.run.place,app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place
 WEB_LETSENCRYPT_HOSTS=tenis.esaf.run.place
 LETSENCRYPT_EMAIL=admin@esaf.run.place
-EVOLUTION_GO_VIRTUAL_HOST=tenisevolution.esaf.run.place
+EVOLUTION_API_VIRTUAL_HOST=tenisevolution.esaf.run.place
 ```
 
 Esta abordagem evita mexer nas outras apps da VPS. Para adicionar um novo tenant antes de wildcard, adiciona-se o subdominio a `WEB_VIRTUAL_HOSTS` e, apenas depois de o DNS existir e resolver para a VPS, adiciona-se tambem a `WEB_LETSENCRYPT_HOSTS`.
 
 Nota operacional importante: o `letsencrypt-nginx-proxy-companion` tenta emitir um unico certificado para todos os dominios em `LETSENCRYPT_HOST`. Se um dos dominios nao tiver DNS ativo, a emissao inteira falha. Por isso, no MVP, `WEB_LETSENCRYPT_HOSTS` fica limitado a `tenis.esaf.run.place`, que ja resolve para a VPS. Os subdominios preparados podem permanecer em `WEB_VIRTUAL_HOSTS` sem TLS ate o DNS ser criado.
 
-O Evolution fica pausado por defeito nesta fase. No Docker Compose, os servicos `evolution-go` e `evolution-postgres` devem ficar atras de um `profile` chamado `evolution`, para que `docker compose up -d --build` usado no deploy normal nao os religue automaticamente.
+O Evolution fica pausado por defeito nesta fase. No Docker Compose, os servicos `evolution-api` e `evolution-postgres` devem ficar atras de um `profile` chamado `evolution`, para que `docker compose up -d --build` usado no deploy normal nao os religue automaticamente.
 
 ## Modelo multi-tenant
 
