@@ -16,6 +16,8 @@ services:
 
   evolution-postgres:
     image: postgres:16-alpine
+    profiles:
+      - evolution
     restart: unless-stopped
     environment:
       POSTGRES_DB: postgres
@@ -32,6 +34,8 @@ services:
 
   evolution-go:
     image: evoapicloud/evolution-go:latest
+    profiles:
+      - evolution
     restart: unless-stopped
     depends_on:
       evolution-postgres:
@@ -46,9 +50,9 @@ services:
       WADEBUG: ${EVOLUTION_GO_WADEBUG:-INFO}
       LOGTYPE: ${EVOLUTION_GO_LOGTYPE:-console}
       CONNECT_ON_STARTUP: ${EVOLUTION_GO_CONNECT_ON_STARTUP:-true}
-      VIRTUAL_HOST: ${EVOLUTION_GO_VIRTUAL_HOST:-evolution.esaf.run.place}
+      VIRTUAL_HOST: ${EVOLUTION_GO_VIRTUAL_HOST:-tenisevolution.esaf.run.place}
       VIRTUAL_PORT: 8080
-      LETSENCRYPT_HOST: ${EVOLUTION_GO_VIRTUAL_HOST:-evolution.esaf.run.place}
+      LETSENCRYPT_HOST: ${EVOLUTION_GO_VIRTUAL_HOST:-tenisevolution.esaf.run.place}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-nicollasacruz@gmail.com}
     expose:
       - "8080"
@@ -123,9 +127,9 @@ services:
         API_BASE_URL: http://tenis-management-api-internal:3000
         NEXT_PUBLIC_API_BASE_URL: /api
         SAAS_ROOT_DOMAIN: ${SAAS_ROOT_DOMAIN:-tenis.esaf.run.place}
-        VIRTUAL_HOST: ${WEB_VIRTUAL_HOSTS:-app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place}
+        VIRTUAL_HOST: ${WEB_VIRTUAL_HOSTS:-tenis.esaf.run.place,app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place}
         VIRTUAL_PORT: 80
-        LETSENCRYPT_HOST: ${WEB_LETSENCRYPT_HOSTS:-app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place}
+        LETSENCRYPT_HOST: ${WEB_LETSENCRYPT_HOSTS:-tenis.esaf.run.place,app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place}
         LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-admin@esaf.run.place}
     networks:
         - default
