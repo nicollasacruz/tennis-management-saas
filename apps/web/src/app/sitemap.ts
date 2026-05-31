@@ -5,7 +5,7 @@ const languages = {
   'pt-PT': `${SITE_URL}/pt`,
   'en-GB': `${SITE_URL}/en`,
   'es-ES': `${SITE_URL}/es`,
-  'x-default': `${SITE_URL}/pt`,
+  'x-default': `${SITE_URL}/en`,
 };
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${SITE_URL}${localeHref[locale]}`,
     lastModified: new Date(),
     changeFrequency: 'monthly',
-    priority: locale === 'pt' ? 1 : 0.9,
+    priority: locale === 'en' ? 1 : 0.9,
     alternates: { languages },
   }));
 }
