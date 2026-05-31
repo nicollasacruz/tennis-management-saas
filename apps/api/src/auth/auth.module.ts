@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { resolveJwtSecret } from './jwt-secret';
 import { PrismaModule } from '../prisma/prisma.module';
 import { TenantsModule } from '../tenants/tenants.module';
 
@@ -13,7 +14,7 @@ import { TenantsModule } from '../tenants/tenants.module';
     TenantsModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'esaf-secret-key-change-in-production',
+      secret: resolveJwtSecret(),
       signOptions: { expiresIn: '2d' },
     }),
   ],

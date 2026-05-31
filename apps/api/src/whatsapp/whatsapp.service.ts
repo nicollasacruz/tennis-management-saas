@@ -1,28 +1,34 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { TenantContext } from '../tenants/tenant-context';
+import { TenantWhatsappConfigService } from './tenant-whatsapp-config.service';
 import type { WhatsappDocumentPayload } from './whatsapp.helpers';
 
 @Injectable()
 export class WhatsappService {
   private readonly logger = new Logger(WhatsappService.name);
+  // Servidor Evolution partilhado entre tenants; cada tenant tem a sua instância.
   private readonly baseUrl: string | undefined;
-  private readonly apiKey: string | undefined;
-  private readonly instanceId: string | undefined;
-  private readonly instanceToken: string | undefined;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    private readonly tenantContext: TenantContext,
+    private readonly whatsappConfig: TenantWhatsappConfigService,
+  ) {
     this.baseUrl = this.config.get<string>('EVOLUTION_GO_BASE_URL')?.replace(/\/$/, '');
-    this.apiKey = this.config.get<string>('EVOLUTION_GO_API_KEY') || undefined;
-    this.instanceId = this.config.get<string>('EVOLUTION_GO_INSTANCE_ID') || undefined;
-    this.instanceToken = this.config.get<string>('EVOLUTION_GO_INSTANCE_TOKEN') || undefined;
   }
 
   async sendDocument(payload: WhatsappDocumentPayload): Promise<{ delivered: boolean }> {
-    const sendApiKey = this.instanceToken ?? this.apiKey;
+    const tenantId = this.tenantContext.getTenantIdOrThrow();
+    const instance = await this.whatsappConfig.getSendCredentials(tenantId);
 
-    if (!this.baseUrl || !sendApiKey || !this.instanceId) {
+    if (!this.baseUrl) {
+      throw new Error('Evolution Go não configurado. Defina EVOLUTION_GO_BASE_URL.');
+    }
+
+    if (!instance) {
       throw new Error(
-        'Evolution Go não configurado. Defina EVOLUTION_GO_BASE_URL, EVOLUTION_GO_INSTANCE_ID e EVOLUTION_GO_INSTANCE_TOKEN.',
+        'WhatsApp não configurado para esta organização. Configure a instância Evolution em /whatsapp/config.',
       );
     }
 
@@ -30,11 +36,11 @@ export class WhatsappService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        apikey: sendApiKey,
+        apikey: instance.instanceToken,
       },
       body: JSON.stringify({
         ...payload,
-        id: this.instanceId,
+        id: instance.instanceId,
       }),
     });
 

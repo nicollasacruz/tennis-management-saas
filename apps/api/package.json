@@ -9,7 +9,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
-    "test": "tsx test/mail-queue.helpers.test.ts && tsx test/whatsapp.helpers.test.ts && tsx test/public-receipt-token.test.ts && tsx test/tenant-host.test.ts",
+    "test": "tsx test/mail-queue.helpers.test.ts && tsx test/whatsapp.helpers.test.ts && tsx test/public-receipt-token.test.ts && tsx test/tenant-host.test.ts && tsx test/tenant-scope.test.ts && tsx test/whatsapp.service.test.ts && tsx test/jwt-secret.test.ts",
     "payments:delete-month": "node prisma/delete-payments-month.js",
     "user:create-admin": "node prisma/create-admin.js",
     "start": "nest start",

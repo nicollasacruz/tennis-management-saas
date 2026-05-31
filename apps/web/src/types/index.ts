@@ -229,6 +229,19 @@ export type User = {
   role: string;
 };
 
+export type WhatsappConnectionStatus = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED';
+
+export type WhatsappConfig = {
+  configured: boolean;
+  instanceId: string | null;
+  instanceName: string | null;
+  phoneNumber: string | null;
+  hasToken: boolean;
+  status: WhatsappConnectionStatus;
+  lastConnectedAt: string | null;
+  updatedAt: string | null;
+};
+
 export type Activity = {
   category: string;
   createdAt: string;

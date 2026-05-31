@@ -27,14 +27,41 @@ async function main() {
     }
   });
 
+  // Migra a instância Evolution global (env) para a config por-tenant do esaf,
+  // preservando o WhatsApp atual. Servidor Evolution continua partilhado.
+  const evolutionInstanceId = process.env.EVOLUTION_GO_INSTANCE_ID?.trim();
+  const evolutionInstanceToken = process.env.EVOLUTION_GO_INSTANCE_TOKEN?.trim();
+  const hasEvolutionEnv =
+    !!evolutionInstanceId &&
+    evolutionInstanceId !== 'CHANGE_ME' &&
+    !!evolutionInstanceToken &&
+    evolutionInstanceToken !== 'CHANGE_ME';
+
+  await prisma.tenantWhatsappConfig.upsert({
+    where: { tenantId: esafTenant.id },
+    update: hasEvolutionEnv
+      ? {
+          instanceId: evolutionInstanceId,
+          instanceToken: evolutionInstanceToken
+        }
+      : {},
+    create: {
+      tenantId: esafTenant.id,
+      instanceName: 'esaf',
+      instanceId: hasEvolutionEnv ? evolutionInstanceId : null,
+      instanceToken: hasEvolutionEnv ? evolutionInstanceToken : null
+    }
+  });
+
   const basePlan = await prisma.plan.upsert({
-    where: { name: 'Escola Base' },
+    where: { tenantId_name: { tenantId: esafTenant.id, name: 'Escola Base' } },
     update: {
       description: 'Plano mensal com foco em evolução técnica.',
       monthlyFeeCents: 6500,
       sessionCount: 8
     },
     create: {
+      tenantId: esafTenant.id,
       name: 'Escola Base',
       description: 'Plano mensal com foco em evolução técnica.',
       monthlyFeeCents: 6500,
@@ -43,13 +70,14 @@ async function main() {
   });
 
   const competitionPlan = await prisma.plan.upsert({
-    where: { name: 'Competição' },
+    where: { tenantId_name: { tenantId: esafTenant.id, name: 'Competição' } },
     update: {
       description: 'Treino intensivo para atletas em competição.',
       monthlyFeeCents: 11000,
       sessionCount: 16
     },
     create: {
+      tenantId: esafTenant.id,
       name: 'Competição',
       description: 'Treino intensivo para atletas em competição.',
       monthlyFeeCents: 11000,
@@ -58,13 +86,14 @@ async function main() {
   });
 
   const kidsPlan = await prisma.plan.upsert({
-    where: { name: 'Kids' },
+    where: { tenantId_name: { tenantId: esafTenant.id, name: 'Kids' } },
     update: {
       description: 'Introdução lúdica ao ténis para crianças.',
       monthlyFeeCents: 5200,
       sessionCount: 6
     },
     create: {
+      tenantId: esafTenant.id,
       name: 'Kids',
       description: 'Introdução lúdica ao ténis para crianças.',
       monthlyFeeCents: 5200,
@@ -73,7 +102,7 @@ async function main() {
   });
 
   const joao = await prisma.student.upsert({
-    where: { email: 'joao@esaf.local' },
+    where: { tenantId_email: { tenantId: esafTenant.id, email: 'joao@esaf.local' } },
     update: {
       fullName: 'João Matos',
       currentPlanId: competitionPlan.id,
@@ -81,6 +110,7 @@ async function main() {
       taxId: '245778910'
     },
     create: {
+      tenantId: esafTenant.id,
       fullName: 'João Matos',
       email: 'joao@esaf.local',
       phone: '+351 910 000 001',
@@ -90,7 +120,7 @@ async function main() {
   });
 
   const rita = await prisma.student.upsert({
-    where: { email: 'rita@esaf.local' },
+    where: { tenantId_email: { tenantId: esafTenant.id, email: 'rita@esaf.local' } },
     update: {
       fullName: 'Rita Nunes',
       currentPlanId: basePlan.id,
@@ -98,6 +128,7 @@ async function main() {
       taxId: '214889560'
     },
     create: {
+      tenantId: esafTenant.id,
       fullName: 'Rita Nunes',
       email: 'rita@esaf.local',
       phone: '+351 910 000 002',
@@ -107,7 +138,7 @@ async function main() {
   });
 
   const ines = await prisma.student.upsert({
-    where: { email: 'ines@esaf.local' },
+    where: { tenantId_email: { tenantId: esafTenant.id, email: 'ines@esaf.local' } },
     update: {
       fullName: 'Inês Duarte',
       currentPlanId: kidsPlan.id,
@@ -118,6 +149,7 @@ async function main() {
       responsibleTaxId: '233445678'
     },
     create: {
+      tenantId: esafTenant.id,
       fullName: 'Inês Duarte',
       email: 'ines@esaf.local',
       isMinor: true,
@@ -129,7 +161,9 @@ async function main() {
     }
   });
 
-  const paymentCount = await prisma.payment.count();
+  const paymentCount = await prisma.payment.count({
+    where: { tenantId: esafTenant.id }
+  });
   const userCount = await prisma.systemUser.count({
     where: { tenantId: esafTenant.id }
   });
@@ -137,6 +171,7 @@ async function main() {
   if (paymentCount === 0) {
     await prisma.payment.create({
       data: {
+        tenantId: esafTenant.id,
         studentId: joao.id,
         planId: competitionPlan.id,
         description: 'Mensalidade Competição',
@@ -148,6 +183,7 @@ async function main() {
         status: PaymentStatus.PAID,
         receipt: {
           create: {
+            tenantId: esafTenant.id,
             number: 'ESAF-202603-0001'
           }
         }
@@ -156,6 +192,7 @@ async function main() {
 
     await prisma.payment.create({
       data: {
+        tenantId: esafTenant.id,
         studentId: rita.id,
         planId: basePlan.id,
         description: 'Mensalidade Escola Base',
@@ -168,6 +205,7 @@ async function main() {
 
     await prisma.payment.create({
       data: {
+        tenantId: esafTenant.id,
         studentId: ines.id,
         planId: kidsPlan.id,
         description: 'Mensalidade Kids',
@@ -218,12 +256,15 @@ async function main() {
     console.log('   - sofia@esaf.local / esaf123 (DESK)');
   }
 
-  const activityCount = await prisma.activity.count();
+  const activityCount = await prisma.activity.count({
+    where: { tenantId: esafTenant.id }
+  });
 
   if (activityCount === 0) {
     await prisma.activity.createMany({
       data: [
         {
+          tenantId: esafTenant.id,
           title: 'I Torneio Juvenil ESAF',
           description:
             'Arranque da época competitiva juvenil nas nossas instalações. Prova destinada aos mais jovens, com espírito formativo.',
@@ -232,6 +273,7 @@ async function main() {
           endDate: new Date('2026-04-26T00:00:00.000Z')
         },
         {
+          tenantId: esafTenant.id,
           title: 'II Torneio Juvenil ESAF',
           description:
             'Segunda etapa do circuito interno, consolidando a experiência competitiva dos atletas da formação.',
@@ -240,6 +282,7 @@ async function main() {
           endDate: new Date('2026-05-24T00:00:00.000Z')
         },
         {
+          tenantId: esafTenant.id,
           title: 'Barcelos Open',
           description:
             'Prova de referência no calendário nacional, disputada nos courts da ESAF. Os nossos atletas competem frente a adversários de todo o país, no palco que chamam de casa.',

@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   PaymentMethod,
   PaymentStatus,
   Prisma
 } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { TENANT_DB, TenantPrisma } from '../prisma/tenant-scope';
+import { TenantContext } from '../tenants/tenant-context';
 
 const PHYSICAL_TRAINING_SURCHARGE_CENTS = 500;
 
@@ -16,7 +17,10 @@ type ChargeStudentRecord = Prisma.StudentGetPayload<{
 
 @Injectable()
 export class BillingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(TENANT_DB) private readonly prisma: TenantPrisma,
+    private readonly tenantContext: TenantContext,
+  ) {}
 
   async syncCurrentMonth(referenceDate = new Date()) {
     await this.refreshOverduePayments(referenceDate);
@@ -78,8 +82,9 @@ export class BillingService {
       .filter((payment) => payment.amountCents > 0);
 
     if (paymentsToCreate.length) {
+      const tenantId = this.tenantContext.getTenantIdOrThrow();
       await this.prisma.payment.createMany({
-        data: paymentsToCreate
+        data: paymentsToCreate.map((payment) => ({ ...payment, tenantId }))
       });
     }
 

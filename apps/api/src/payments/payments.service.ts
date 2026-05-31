@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException
@@ -7,7 +8,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PaymentStatus, Prisma } from '@prisma/client';
 import { MailQueueService } from '../mail/mail-queue.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { TENANT_DB, TenantPrisma, TenantTx } from '../prisma/tenant-scope';
+import { TenantContext } from '../tenants/tenant-context';
 import { normalizeWhatsappNumber } from '../whatsapp/whatsapp.helpers';
 import { WhatsappQueueService } from '../whatsapp/whatsapp-queue.service';
 import { BillingService } from './billing.service';
@@ -23,10 +25,11 @@ export class PaymentsService {
 
   constructor(
     private readonly billingService: BillingService,
-    private readonly prisma: PrismaService,
+    @Inject(TENANT_DB) private readonly prisma: TenantPrisma,
     private readonly configService: ConfigService,
     private readonly mailQueueService: MailQueueService,
-    private readonly whatsappQueueService: WhatsappQueueService
+    private readonly whatsappQueueService: WhatsappQueueService,
+    private readonly tenantContext: TenantContext
   ) {}
 
   async create(dto: CreatePaymentDto) {
@@ -74,6 +77,7 @@ export class PaymentsService {
     const payment = await this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.create({
         data: {
+          tenantId: this.tenantContext.getTenantIdOrThrow(),
           amountCents,
           competencyMonth,
           description,
@@ -89,6 +93,7 @@ export class PaymentsService {
       if (status === PaymentStatus.PAID) {
         await tx.receipt.create({
           data: {
+            tenantId: this.tenantContext.getTenantIdOrThrow(),
             number: await this.buildReceiptNumber(tx, paidAt ?? new Date()),
             paymentId: payment.id
           }
@@ -230,6 +235,7 @@ export class PaymentsService {
       if (status === PaymentStatus.PAID && !existing.receipt) {
         await tx.receipt.create({
           data: {
+            tenantId: this.tenantContext.getTenantIdOrThrow(),
             number: await this.buildReceiptNumber(tx, paidAt ?? new Date()),
             paymentId: id
           }
@@ -295,6 +301,7 @@ export class PaymentsService {
       if (!existing.receipt) {
         await tx.receipt.create({
           data: {
+            tenantId: this.tenantContext.getTenantIdOrThrow(),
             number: await this.buildReceiptNumber(tx, paidAt),
             paymentId: id
           }
@@ -605,7 +612,7 @@ export class PaymentsService {
   }
 
   private async buildReceiptNumber(
-    tx: Prisma.TransactionClient,
+    tx: TenantTx,
     issuedAt: Date
   ) {
     const monthStart = new Date(issuedAt.getFullYear(), issuedAt.getMonth(), 1);

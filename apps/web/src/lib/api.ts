@@ -1,5 +1,5 @@
 import { API_BASE } from './utils';
-import type { CommunicationJob } from '@/types';
+import type { CommunicationJob, WhatsappConfig } from '@/types';
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -121,6 +121,34 @@ export async function retryCommunicationJob(
   return apiRequest(`/communications/jobs/${channel}/${id}/retry`, {
     method: 'POST',
     body: JSON.stringify({}),
+  });
+}
+
+export async function getWhatsappConfig(): Promise<WhatsappConfig> {
+  return apiRequest('/whatsapp/config');
+}
+
+export async function updateWhatsappConfig(input: {
+  instanceId?: string;
+  instanceToken?: string;
+  instanceName?: string;
+  phoneNumber?: string;
+}): Promise<WhatsappConfig> {
+  return apiRequest('/whatsapp/config', {
+    method: 'PUT',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function sendWhatsappTest(number: string): Promise<{
+  message: string;
+  jobId: string;
+  status: string;
+  number: string;
+}> {
+  return apiRequest('/whatsapp/test', {
+    method: 'POST',
+    body: JSON.stringify({ number }),
   });
 }
 

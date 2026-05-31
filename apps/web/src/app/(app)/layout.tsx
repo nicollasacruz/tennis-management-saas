@@ -16,6 +16,7 @@ import {
   CalendarDays,
   Trophy,
   MessageCircle,
+  Smartphone,
 } from 'lucide-react';
 
 const navItems = [
@@ -27,6 +28,7 @@ const navItems = [
   { href: '/equipa', label: 'Equipa', icon: Settings },
   { href: '/pagamentos', label: 'Pagamentos', icon: CreditCard },
   { href: '/comunicacoes', label: 'Comunicações', icon: MessageCircle },
+  { href: '/whatsapp', label: 'WhatsApp', icon: Smartphone },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ActivitiesModule } from './activities/activities.module';
 import { AppController } from './app.controller';
@@ -12,6 +12,7 @@ import { PlansModule } from './plans/plans.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StudentsModule } from './students/students.module';
 import { SystemUsersModule } from './system-users/system-users.module';
+import { TenantContextMiddleware } from './tenants/tenant-context.middleware';
 import { TenantsModule } from './tenants/tenants.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
 
@@ -36,4 +37,8 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
   ],
   controllers: [AppController]
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(TenantContextMiddleware).forRoutes('*');
+  }
+}

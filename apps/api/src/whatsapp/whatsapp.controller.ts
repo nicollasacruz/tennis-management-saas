@@ -1,6 +1,19 @@
-import { BadRequestException, Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
+import { SystemUserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
 import { TestWhatsappDto } from './dto/test-whatsapp.dto';
+import { UpdateWhatsappConfigDto } from './dto/update-whatsapp-config.dto';
+import { TenantWhatsappConfigService } from './tenant-whatsapp-config.service';
 import { WhatsappQueueService } from './whatsapp-queue.service';
 import { normalizeWhatsappNumber } from './whatsapp.helpers';
 
@@ -10,7 +23,22 @@ const TEST_DOCUMENT_URL =
 @UseGuards(JwtAuthGuard)
 @Controller('whatsapp')
 export class WhatsappController {
-  constructor(private readonly whatsappQueueService: WhatsappQueueService) {}
+  constructor(
+    private readonly whatsappQueueService: WhatsappQueueService,
+    private readonly whatsappConfigService: TenantWhatsappConfigService,
+  ) {}
+
+  @Get('config')
+  getConfig() {
+    return this.whatsappConfigService.getForCurrentTenant();
+  }
+
+  @Put('config')
+  @UseGuards(RolesGuard)
+  @Roles(SystemUserRole.ADMIN)
+  updateConfig(@Body() dto: UpdateWhatsappConfigDto) {
+    return this.whatsappConfigService.upsertForCurrentTenant(dto);
+  }
 
   @Post('test')
   async test(@Body() dto: TestWhatsappDto) {

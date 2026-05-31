@@ -22,6 +22,19 @@ export class TenantsService {
     return this.resolveByHost(host);
   }
 
+  /**
+   * Versão suave de resolveFromHeaders: devolve `null` em vez de lançar quando
+   * o host não mapeia um tenant. Usada pelo middleware para abrir o contexto
+   * de tenant sem bloquear rotas públicas/neutras (ex.: health check).
+   */
+  async tryResolveFromHeaders(headers: HeadersLike) {
+    try {
+      return await this.resolveFromHeaders(headers);
+    } catch {
+      return null;
+    }
+  }
+
   async resolveByHost(host: string | null) {
     const normalizedHost = normalizeTenantHost(host);
     const byHost = normalizedHost
