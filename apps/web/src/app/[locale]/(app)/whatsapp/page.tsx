@@ -6,10 +6,13 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
+  QrCode,
+  RefreshCw,
   Send,
   Smartphone,
 } from 'lucide-react';
 import {
+  connectWhatsappInstance,
   getWhatsappConfig,
   sendWhatsappTest,
   updateWhatsappConfig,
@@ -56,6 +59,8 @@ export default function WhatsappPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
   const [testNumber, setTestNumber] = useState('');
+  const [qrCodeBase64, setQrCodeBase64] = useState<string | null>(null);
+  const [qrCodeText, setQrCodeText] = useState<string | null>(null);
 
   useEffect(() => {
     if (config) {
@@ -81,6 +86,26 @@ export default function WhatsappPage() {
     onError: (error: unknown) => {
       setFeedback(
         error instanceof Error ? error.message : 'Não foi possível guardar.',
+      );
+    },
+  });
+
+  const connectMutation = useMutation({
+    mutationFn: connectWhatsappInstance,
+    onSuccess: (result) => {
+      setQrCodeBase64(result.qrCodeBase64);
+      setQrCodeText(result.qrCodeText);
+      queryClient.setQueryData(['whatsapp-config'], result.config);
+      queryClient.invalidateQueries({ queryKey: ['whatsapp-config'] });
+      setFeedback(
+        result.qrCodeBase64 || result.qrCodeText
+          ? 'QR code gerado. Leia-o no WhatsApp para concluir a ligação.'
+          : 'Instância criada/atualizada. A Evolution ainda não devolveu QR code; tente atualizar dentro de alguns segundos.',
+      );
+    },
+    onError: (error: unknown) => {
+      setFeedback(
+        error instanceof Error ? error.message : 'Não foi possível criar o QR code.',
       );
     },
   });
@@ -185,7 +210,7 @@ export default function WhatsappPage() {
               </label>
 
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-[#183223]">
-                Instance ID
+                ID da instância
                 <input
                   value={instanceId}
                   onChange={(event) => setInstanceId(event.target.value)}
@@ -196,7 +221,7 @@ export default function WhatsappPage() {
               </label>
 
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-[#183223]">
-                Instance Token
+                Token da instância
                 <input
                   type="password"
                   value={instanceToken}
@@ -229,6 +254,71 @@ export default function WhatsappPage() {
               Servidor Evolution partilhado; cada organização usa a sua própria instância.
               Última atualização: {formatDateTime(config?.updatedAt ?? null)}.
             </p>
+          </div>
+
+          <div className="rounded-lg border border-[#d9e5c1] bg-white/85 p-5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h2 className="mb-1 text-lg font-bold text-[#183223]">Ligação por QR code</h2>
+                <p className="text-sm text-[#566857]">
+                  Cria ou reutiliza a instância desta organização na Evolution API.
+                </p>
+              </div>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFeedback(null);
+                    setQrCodeBase64(null);
+                    setQrCodeText(null);
+                    connectMutation.mutate();
+                  }}
+                  disabled={connectMutation.isPending}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#183223] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#24410b] disabled:opacity-50"
+                >
+                  {connectMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : config?.configured ? (
+                    <RefreshCw className="h-4 w-4" />
+                  ) : (
+                    <QrCode className="h-4 w-4" />
+                  )}
+                  {config?.configured ? 'Atualizar QR code' : 'Criar QR code'}
+                </button>
+              )}
+            </div>
+
+            <div className="mt-4 flex min-h-48 items-center justify-center rounded-lg border border-dashed border-[#d9e5c1] bg-[#f8fbf2] p-4">
+              {qrCodeBase64 ? (
+                <img
+                  src={qrCodeBase64}
+                  alt="QR code de ligação WhatsApp"
+                  className="h-44 w-44 rounded bg-white p-2"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-center text-sm font-semibold text-[#566857]">
+                  <QrCode className="h-8 w-8" />
+                  <span>
+                    {connectMutation.isPending
+                      ? 'A pedir QR code à Evolution API...'
+                      : qrCodeText
+                        ? 'QR code recebido em formato texto.'
+                        : 'Ainda não há QR code ativo.'}
+                  </span>
+                  {qrCodeText && (
+                    <code className="max-w-full break-all rounded bg-white px-2 py-1 text-xs text-[#183223]">
+                      {qrCodeText}
+                    </code>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {!isAdmin && (
+              <p className="mt-3 text-xs font-semibold text-[#8d5c10]">
+                Apenas administradores podem criar ou atualizar o QR code.
+              </p>
+            )}
           </div>
 
           <div className="rounded-lg border border-[#d9e5c1] bg-white/85 p-5">

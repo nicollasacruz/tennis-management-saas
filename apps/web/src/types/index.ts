@@ -242,6 +242,12 @@ export type WhatsappConfig = {
   updatedAt: string | null;
 };
 
+export type WhatsappConnectResult = {
+  config: WhatsappConfig;
+  qrCodeBase64: string | null;
+  qrCodeText: string | null;
+};
+
 export type Activity = {
   category: string;
   createdAt: string;

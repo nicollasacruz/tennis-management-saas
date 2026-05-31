@@ -1,5 +1,5 @@
 import { API_BASE } from './utils';
-import type { CommunicationJob, WhatsappConfig } from '@/types';
+import type { CommunicationJob, WhatsappConfig, WhatsappConnectResult } from '@/types';
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -137,6 +137,13 @@ export async function updateWhatsappConfig(input: {
   return apiRequest('/whatsapp/config', {
     method: 'PUT',
     body: JSON.stringify(input),
+  });
+}
+
+export async function connectWhatsappInstance(): Promise<WhatsappConnectResult> {
+  return apiRequest('/whatsapp/connect', {
+    method: 'POST',
+    body: JSON.stringify({}),
   });
 }
 
