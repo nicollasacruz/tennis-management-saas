@@ -129,7 +129,7 @@ services:
         SAAS_ROOT_DOMAIN: ${SAAS_ROOT_DOMAIN:-tenis.esaf.run.place}
         VIRTUAL_HOST: ${WEB_VIRTUAL_HOSTS:-tenis.esaf.run.place,app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place}
         VIRTUAL_PORT: 80
-        LETSENCRYPT_HOST: ${WEB_LETSENCRYPT_HOSTS:-tenis.esaf.run.place,app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place}
+        LETSENCRYPT_HOST: ${WEB_LETSENCRYPT_HOSTS:-tenis.esaf.run.place}
         LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-admin@esaf.run.place}
     networks:
         - default
