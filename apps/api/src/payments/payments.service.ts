@@ -147,6 +147,23 @@ export class PaymentsService {
     });
   }
 
+  async findOne(id: string) {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id },
+      include: {
+        plan: true,
+        receipt: true,
+        student: true
+      }
+    });
+
+    if (!payment) {
+      throw new NotFoundException('Pagamento não encontrado.');
+    }
+
+    return payment;
+  }
+
   async update(id: string, dto: UpdatePaymentDto) {
     const existing = await this.prisma.payment.findUnique({
       where: { id },

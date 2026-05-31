@@ -45,7 +45,7 @@ export default function EditarPagamentoPage() {
       setPlanId(payment.planId ?? '');
       setAmount(centsToEuroInput(payment.amountCents));
       setCompetencyMonth(payment.competencyMonth.slice(0, 7));
-      setDueDate(payment.dueDate);
+      setDueDate(payment.dueDate.slice(0, 10));
       setStatus(payment.status);
       setMethod(payment.method ?? 'BANK_TRANSFER');
     }
