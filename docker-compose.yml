@@ -69,6 +69,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
       ESAF_LOGO_URL: ${ESAF_LOGO_URL}
       FRONTEND_ORIGIN: "*"
       SMTP_ENABLED: ${SMTP_ENABLED:-true}
