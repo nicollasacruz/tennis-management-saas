@@ -12,6 +12,7 @@ import { PlansModule } from './plans/plans.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StudentsModule } from './students/students.module';
 import { SystemUsersModule } from './system-users/system-users.module';
+import { TenantsModule } from './tenants/tenants.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
 
 @Module({
@@ -20,6 +21,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
       isGlobal: true
     }),
     PrismaModule,
+    TenantsModule,
     MailModule,
     WhatsappModule,
     AuthModule,

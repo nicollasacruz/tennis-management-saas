@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Headers, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { IsEmail, IsString } from 'class-validator';
 import { AuthService } from './auth.service';
 
@@ -16,7 +16,10 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password);
+  async login(
+    @Body() dto: LoginDto,
+    @Headers() headers: Record<string, string | string[] | undefined>,
+  ) {
+    return this.authService.login(dto.email, dto.password, headers);
   }
 }

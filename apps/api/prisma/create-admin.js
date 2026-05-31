@@ -41,6 +41,7 @@ Opções:
   --password   Password em texto plano; será guardada com hash bcrypt
   --phone      Telefone opcional
   --notes      Notas internas opcionais
+  --tenant     Slug do tenant; por omissão usa DEFAULT_TENANT_SLUG ou esaf
   --help       Mostra esta ajuda
 
 Também pode usar variáveis de ambiente:
@@ -49,6 +50,10 @@ Também pode usar variáveis de ambiente:
   ADMIN_PASSWORD
   ADMIN_PHONE
   ADMIN_NOTES
+  ADMIN_TENANT_SLUG
+  DEFAULT_TENANT_SLUG
+  TENANT_PRIMARY_HOST
+  SAAS_ROOT_DOMAIN
 `);
 }
 
@@ -72,6 +77,27 @@ function validateEmail(email) {
   return email.toLowerCase();
 }
 
+function validateSlug(slug) {
+  const normalized = String(slug).trim().toLowerCase();
+
+  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/.test(normalized)) {
+    throw new Error('Slug do tenant inválido.');
+  }
+
+  return normalized;
+}
+
+function buildPrimaryHost(slug) {
+  const explicitHost = process.env.TENANT_PRIMARY_HOST?.trim();
+
+  if (explicitHost) {
+    return explicitHost.toLowerCase();
+  }
+
+  const rootDomain = process.env.SAAS_ROOT_DOMAIN?.trim() || 'tenis.esaf.run.place';
+  return `${slug}.${rootDomain}`.toLowerCase();
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -90,10 +116,31 @@ async function main() {
   );
   const phone = pick(args, 'phone', 'ADMIN_PHONE');
   const notes = pick(args, 'notes', 'ADMIN_NOTES');
+  const tenantSlug = validateSlug(
+    pick(args, 'tenant', 'ADMIN_TENANT_SLUG') ??
+      process.env.DEFAULT_TENANT_SLUG ??
+      'esaf'
+  );
+  const tenant = await prisma.tenant.upsert({
+    where: { slug: tenantSlug },
+    update: {},
+    create: {
+      name: process.env.TENANT_NAME?.trim() || tenantSlug.toUpperCase(),
+      slug: tenantSlug,
+      primaryHost: buildPrimaryHost(tenantSlug),
+      receiptIssuer: process.env.RECEIPT_ISSUER,
+      receiptSignatureLabel: process.env.RECEIPT_SIGNATURE_LABEL
+    }
+  });
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const existing = await prisma.systemUser.findUnique({
-    where: { email }
+    where: {
+      tenantId_email: {
+        tenantId: tenant.id,
+        email
+      }
+    }
   });
 
   const payload = {
@@ -107,10 +154,16 @@ async function main() {
 
   const user = existing
     ? await prisma.systemUser.update({
-        where: { email },
+        where: {
+          tenantId_email: {
+            tenantId: tenant.id,
+            email
+          }
+        },
         data: payload,
         select: {
           id: true,
+          tenantId: true,
           email: true,
           fullName: true,
           role: true,
@@ -119,11 +172,13 @@ async function main() {
       })
     : await prisma.systemUser.create({
         data: {
+          tenantId: tenant.id,
           email,
           ...payload
         },
         select: {
           id: true,
+          tenantId: true,
           email: true,
           fullName: true,
           role: true,
@@ -137,6 +192,7 @@ async function main() {
       : 'Utilizador admin criado com sucesso.'
   );
   console.log(`ID: ${user.id}`);
+  console.log(`Tenant: ${tenant.slug} (${user.tenantId})`);
   console.log(`Nome: ${user.fullName}`);
   console.log(`Email: ${user.email}`);
   console.log(`Role: ${user.role}`);

@@ -13,11 +13,25 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { sub: string; email: string; role: string; fullName: string }) {
-    const user = await this.prisma.systemUser.findUnique({
-      where: { id: payload.sub },
+  async validate(payload: {
+    sub: string;
+    tenantId: string;
+    email: string;
+    role: string;
+    fullName: string;
+  }) {
+    if (!payload.tenantId) {
+      throw new UnauthorizedException('Sessão sem organização associada');
+    }
+
+    const user = await this.prisma.systemUser.findFirst({
+      where: {
+        id: payload.sub,
+        tenantId: payload.tenantId,
+      },
       select: {
         id: true,
+        tenantId: true,
         email: true,
         fullName: true,
         role: true,
@@ -26,7 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user || !user.isActive) {
-      throw new UnauthorizedException('Usuário não encontrado ou inativo');
+      throw new UnauthorizedException('Utilizador não encontrado ou inativo');
     }
 
     return user;

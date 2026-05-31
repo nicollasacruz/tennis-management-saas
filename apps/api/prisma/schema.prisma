@@ -58,6 +58,27 @@ enum AttendanceType {
   PHYSICAL
 }
 
+enum TenantStatus {
+  ACTIVE
+  TRIALING
+  SUSPENDED
+  ARCHIVED
+}
+
+model Tenant {
+  id                    String         @id @default(cuid())
+  name                  String
+  slug                  String         @unique
+  primaryHost           String         @unique
+  status                TenantStatus   @default(ACTIVE)
+  logoUrl               String?
+  receiptIssuer         String?
+  receiptSignatureLabel String?
+  systemUsers           SystemUser[]
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+}
+
 model Plan {
   id              String    @id @default(cuid())
   name            String    @unique
@@ -100,8 +121,10 @@ model Student {
 
 model SystemUser {
   id        String         @id @default(cuid())
+  tenantId  String
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   fullName  String
-  email     String         @unique
+  email     String
   password  String
   phone     String?
   role      SystemUserRole
@@ -109,6 +132,9 @@ model SystemUser {
   isActive  Boolean        @default(true)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
 }
 
 model Payment {

@@ -7,11 +7,12 @@ import { CreateSystemUserDto } from './dto/create-system-user.dto';
 export class SystemUsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateSystemUserDto) {
+  async create(dto: CreateSystemUserDto, tenantId: string) {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
     
     return this.prisma.systemUser.create({
       data: {
+        tenantId,
         email: dto.email,
         password: hashedPassword,
         fullName: dto.fullName,
@@ -34,8 +35,9 @@ export class SystemUsersService {
     });
   }
 
-  list() {
+  list(tenantId: string) {
     return this.prisma.systemUser.findMany({
+      where: { tenantId },
       orderBy: [{ isActive: 'desc' }, { fullName: 'asc' }]
     });
   }

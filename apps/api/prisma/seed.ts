@@ -9,6 +9,24 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
+  const esafTenant = await prisma.tenant.upsert({
+    where: { slug: 'esaf' },
+    update: {
+      name: 'ESAF - Escola de Tenis',
+      primaryHost: 'esaf.tenis.esaf.run.place',
+      receiptIssuer: 'ESAF - Escola de Tenis',
+      receiptSignatureLabel: 'Direcao ESAF'
+    },
+    create: {
+      id: 'tenant_esaf',
+      name: 'ESAF - Escola de Tenis',
+      slug: 'esaf',
+      primaryHost: 'esaf.tenis.esaf.run.place',
+      receiptIssuer: 'ESAF - Escola de Tenis',
+      receiptSignatureLabel: 'Direcao ESAF'
+    }
+  });
+
   const basePlan = await prisma.plan.upsert({
     where: { name: 'Escola Base' },
     update: {
@@ -112,7 +130,9 @@ async function main() {
   });
 
   const paymentCount = await prisma.payment.count();
-  const userCount = await prisma.systemUser.count();
+  const userCount = await prisma.systemUser.count({
+    where: { tenantId: esafTenant.id }
+  });
 
   if (paymentCount === 0) {
     await prisma.payment.create({
@@ -167,6 +187,7 @@ async function main() {
       data: [
         {
           email: 'ricardo@esaf.local',
+          tenantId: esafTenant.id,
           password: defaultPassword,
           fullName: 'Ricardo Esteves',
           phone: '+351 910 100 001',
@@ -174,6 +195,7 @@ async function main() {
         },
         {
           email: 'marta@esaf.local',
+          tenantId: esafTenant.id,
           password: defaultPassword,
           fullName: 'Marta Correia',
           phone: '+351 910 100 002',
@@ -181,6 +203,7 @@ async function main() {
         },
         {
           email: 'sofia@esaf.local',
+          tenantId: esafTenant.id,
           password: defaultPassword,
           fullName: 'Sofia Lopes',
           phone: '+351 910 100 003',
@@ -189,7 +212,7 @@ async function main() {
       ]
     });
     
-    console.log('✅ Usuários de demonstração criados:');
+    console.log('✅ Utilizadores de demonstração criados:');
     console.log('   - ricardo@esaf.local / esaf123 (HEAD_COACH)');
     console.log('   - marta@esaf.local / esaf123 (FINANCE)');
     console.log('   - sofia@esaf.local / esaf123 (DESK)');
