@@ -1,0 +1,154 @@
+{
+  "meta": {
+    "tagline": "Management software for tennis schools and clubs",
+    "description": "Multi-organisation SaaS platform to manage students, fees, receipts, attendance and automatic WhatsApp and email communication. Get a demo."
+  },
+  "nav": {
+    "categorias": "Categories",
+    "funcionalidades": "Features",
+    "precos": "Pricing",
+    "demo": "Demo",
+    "entrar": "Sign in",
+    "pedirDemo": "Get a demo"
+  },
+  "hero": {
+    "badge": "Tennis management SaaS",
+    "titlePre": "Run your tennis school",
+    "titleHighlight": "end to end",
+    "titlePost": ".",
+    "subtitle": "Students, fees, receipts, attendance and automatic WhatsApp and email communication — in one multi-organisation platform, with every club's data isolated.",
+    "ctaPrimary": "Get a demo",
+    "ctaSecondary": "See pricing",
+    "fineprint": "No card · Set up in minutes · Cancel anytime"
+  },
+  "dashboard": {
+    "org": "Northern Club",
+    "label": "Dashboard · June",
+    "live": "Live",
+    "recebido": "Collected",
+    "alunosAtivos": "Active students",
+    "cobranca": "Collection",
+    "receitaMensal": "Monthly revenue",
+    "toastTitle": "Receipt sent via WhatsApp",
+    "toastSub": "João Matos · 2 min ago"
+  },
+  "stats": {
+    "items": [
+      { "numero": "5 min", "texto": "to set up your organisation" },
+      { "numero": "100%", "texto": "data isolated per organisation" },
+      { "numero": "2 channels", "texto": "automatic WhatsApp and email" }
+    ]
+  },
+  "categorias": {
+    "eyebrow": "Categories",
+    "titulo": "Built for the whole tennis ecosystem",
+    "texto": "One platform, many organisation profiles. Pick your category and start today.",
+    "items": [
+      { "titulo": "Tennis schools", "texto": "Junior schools and grassroots training with classes, fees and per-student attendance." },
+      { "titulo": "Clubs & academies", "texto": "Full financial management, receipts and reports across disciplines." },
+      { "titulo": "Independent coaches", "texto": "Track students, charge fees and send receipts without the hassle." },
+      { "titulo": "Adaptive tennis", "texto": "Inclusive programmes with the same rigour in management and communication." },
+      { "titulo": "Circuits & tournaments", "texto": "Publish activities and events and keep your community informed." }
+    ]
+  },
+  "funcionalidades": {
+    "eyebrow": "Features",
+    "titulo": "Everything a club needs, without spreadsheets",
+    "texto": "From student sign-up to a receipt on WhatsApp — automated and organised per organisation.",
+    "items": [
+      { "titulo": "Students & sign-ups", "texto": "Complete profiles, plans, enrolment status and history — all in one place." },
+      { "titulo": "Fees & billing", "texto": "Automatic monthly charge generation, payment status and per-plan calculation." },
+      { "titulo": "Automatic receipts", "texto": "PDF receipt issuing, per-organisation numbering and one-click sending." },
+      { "titulo": "Attendance & training", "texto": "Quick attendance per class, with training types and reports." },
+      { "titulo": "WhatsApp & email", "texto": "Automatic sending queues for receipts and notices, with retry on failure." },
+      { "titulo": "Financial dashboard", "texto": "Monthly collected, collection rate, debtors and yearly trend in real time." }
+    ]
+  },
+  "precos": {
+    "eyebrow": "Pricing",
+    "titulo": "Simple plans that grow with you",
+    "texto": "Your students' fees are managed inside the platform — independent of your plan.",
+    "popular": "Most popular",
+    "items": [
+      {
+        "nome": "Trial",
+        "preco": "€0",
+        "periodo": "14 days",
+        "descricao": "Try everything, no card.",
+        "cta": "Start free",
+        "inclui": ["Up to 30 students", "1 organisation", "PDF receipts", "Attendance and dashboard", "Email support"]
+      },
+      {
+        "nome": "Club",
+        "preco": "€49",
+        "periodo": "/ month",
+        "descricao": "For schools and clubs in operation.",
+        "cta": "Get a demo",
+        "inclui": ["Unlimited students", "Automatic WhatsApp + email", "Automatic monthly billing", "Activities and tournaments", "Financial reports"]
+      },
+      {
+        "nome": "Network",
+        "preco": "Custom",
+        "periodo": "",
+        "descricao": "For networks with multiple organisations.",
+        "cta": "Talk to sales",
+        "inclui": ["Multi-organisation", "Own domain per organisation", "Full data isolation", "Dedicated onboarding", "SLA and priority support"]
+      }
+    ]
+  },
+  "demo": {
+    "eyebrow": "Demo",
+    "titulo": "See {brand} working with your club's data",
+    "texto": "Tell us about your organisation and we'll prepare a tailored demo. No commitment.",
+    "bullets": [
+      "Set up your organisation in minutes",
+      "Import your students and plans",
+      "Receipts and automatic messages running"
+    ]
+  },
+  "form": {
+    "nome": "Full name",
+    "email": "Work email",
+    "organizacao": "Organisation / club",
+    "telefone": "Phone",
+    "alunos": "No. of students",
+    "alunosPlaceholder": "Select an option",
+    "alunos1": "Up to 30",
+    "alunos2": "31 to 100",
+    "alunos3": "101 to 300",
+    "alunos4": "More than 300",
+    "categoria": "Category",
+    "categoriaPlaceholder": "Select an option",
+    "catEscola": "Tennis school",
+    "catClube": "Club / academy",
+    "catCoach": "Independent coach",
+    "catAdaptado": "Adaptive tennis",
+    "catRede": "Network of organisations",
+    "mensagem": "Message",
+    "mensagemPlaceholder": "Tell us how you manage payments today and what you're looking for.",
+    "privacidade": "I agree to the privacy policy.",
+    "submit": "Get a demo",
+    "submitting": "Sending…",
+    "successTitle": "Request sent",
+    "successText": "Thank you! We'll be in touch soon to schedule your demo."
+  },
+  "footer": {
+    "desc": "Management software for tennis schools and clubs. Students, payments, receipts and communication — in one multi-organisation platform.",
+    "produto": "Product",
+    "contacto": "Contact",
+    "resposta": "Reply within 1 business day",
+    "rights": "All rights reserved.",
+    "slogan": "Tennis management, without friction."
+  },
+  "login": {
+    "subtitle": "Tennis management",
+    "email": "Email",
+    "emailPlaceholder": "user@example.com",
+    "senha": "Password",
+    "senhaPlaceholder": "••••••••",
+    "entrar": "Sign in",
+    "entrando": "Signing in...",
+    "erro": "Sign-in error",
+    "demoTitle": "Demo accounts:"
+  }
+}
