@@ -7,6 +7,7 @@ type EvolutionInstance = {
   name?: string;
   token?: string;
   number?: string | null;
+  ownerJid?: string | null;
   connectionStatus?: string;
   profileName?: string | null;
 };
@@ -46,6 +47,12 @@ export type EvolutionConnectResult = {
   status: EvolutionConnectionStatus;
   qrCodeBase64: string | null;
   qrCodeText: string | null;
+};
+
+export type EvolutionInstanceStatusResult = {
+  instanceId: string | null;
+  phoneNumber: string | null;
+  status: EvolutionConnectionStatus;
 };
 
 @Injectable()
@@ -95,6 +102,46 @@ export class EvolutionApiService {
       status: qrCode?.base64 || qrCode?.code ? 'CONNECTING' : status,
       qrCodeBase64: this.normalizeQrCodeBase64(qrCode?.base64),
       qrCodeText: qrCode?.code ?? qrCode?.pairingCode ?? null,
+    };
+  }
+
+  async logoutInstance(instanceName: string): Promise<void> {
+    this.ensureConfigured();
+
+    const normalizedName = instanceName.trim();
+    if (!normalizedName) {
+      throw new BadRequestException('Nome da instância Evolution inválido.');
+    }
+
+    try {
+      await this.request<unknown>(
+        `/instance/logout/${encodeURIComponent(normalizedName)}`,
+        { method: 'DELETE' },
+      );
+    } catch (error) {
+      if (
+        error instanceof BadRequestException &&
+        String(error.message).includes('404')
+      ) {
+        return;
+      }
+
+      throw error;
+    }
+  }
+
+  async getInstanceStatus(
+    instanceName: string,
+  ): Promise<EvolutionInstanceStatusResult | null> {
+    this.ensureConfigured();
+
+    const remote = await this.findInstance(instanceName.trim());
+    if (!remote) return null;
+
+    return {
+      instanceId: remote.id ?? null,
+      phoneNumber: remote.number ?? this.phoneNumberFromOwnerJid(remote.ownerJid),
+      status: this.mapConnectionStatus(remote.connectionStatus),
     };
   }
 
@@ -160,6 +207,11 @@ export class EvolutionApiService {
     if (value === 'open') return 'CONNECTED';
     if (value === 'connecting') return 'CONNECTING';
     return 'DISCONNECTED';
+  }
+
+  private phoneNumberFromOwnerJid(value: string | null | undefined): string | null {
+    const number = value?.split('@')[0]?.replace(/\D/g, '');
+    return number || null;
   }
 
   private normalizeQrCodeBase64(value: string | undefined): string | null {

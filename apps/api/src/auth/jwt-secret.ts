@@ -1,22 +1,23 @@
-// Fallback APENAS para desenvolvimento. Em produção o segredo tem de vir do ambiente.
-const DEV_FALLBACK_SECRET = 'esaf-dev-secret-not-for-production';
-
 /**
- * Resolve o segredo do JWT. Em produção, exige `JWT_SECRET` (lança se ausente)
- * para nunca usar um segredo conhecido/público. Em dev, usa um fallback local.
+ * Resolve o segredo do JWT. O fallback de desenvolvimento só é usado quando
+ * NODE_ENV === 'development' e JWT_SECRET não está definido. Em staging ou
+ * produção, lança erro para nunca usar um segredo conhecido/público.
  */
-export function resolveJwtSecret(): string {
+function resolveJwtSecret(): string {
+  const devFallbackSecret = 'esaf-dev-secret-not-for-development';
   const secret = process.env.JWT_SECRET?.trim();
 
   if (secret) {
     return secret;
   }
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV !== 'development') {
     throw new Error(
-      'JWT_SECRET não definido. Defina JWT_SECRET no ambiente de produção.',
+      'JWT_SECRET não definido. Defina a variável de ambiente JWT_SECRET.',
     );
   }
 
-  return DEV_FALLBACK_SECRET;
+  return devFallbackSecret;
 }
+
+export { resolveJwtSecret };

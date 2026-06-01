@@ -1,5 +1,20 @@
 import { API_BASE } from './utils';
-import type { CommunicationJob, WhatsappConfig, WhatsappConnectResult } from '@/types';
+import type {
+  CommunicationJob,
+  TenantSettings,
+  WhatsappConfig,
+  WhatsappConnectResult,
+} from '@/types';
+
+const KNOWN_LOCALES = ['pt', 'en', 'es'];
+
+function resolveLoginPath(): string {
+  if (typeof window === 'undefined') return '/login';
+  const segments = window.location.pathname.split('/');
+  const candidate = segments[1];
+  const locale = KNOWN_LOCALES.includes(candidate) ? candidate : 'pt';
+  return `/${locale}/login`;
+}
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -25,7 +40,7 @@ export async function apiRequest<T>(
     localStorage.removeItem('user');
     localStorage.removeItem('authExpiresAt');
     if (typeof window !== 'undefined') {
-      window.location.href = '/login';
+      window.location.href = resolveLoginPath();
     }
     throw new Error('Sessão expirada. Por favor, faça login novamente.');
   }
@@ -58,7 +73,7 @@ export async function openReceiptPdf(paymentId: string): Promise<void> {
     localStorage.removeItem('user');
     localStorage.removeItem('authExpiresAt');
     if (typeof window !== 'undefined') {
-      window.location.href = '/login';
+      window.location.href = resolveLoginPath();
     }
     throw new Error('Sessão expirada. Por favor, faça login novamente.');
   }
@@ -128,6 +143,22 @@ export async function getWhatsappConfig(): Promise<WhatsappConfig> {
   return apiRequest('/whatsapp/config');
 }
 
+export async function getTenantSettings(): Promise<TenantSettings> {
+  return apiRequest('/tenants/current/settings');
+}
+
+export async function updateTenantSettings(input: {
+  name?: string;
+  logoUrl?: string;
+  receiptIssuer?: string;
+  receiptSignatureLabel?: string;
+}): Promise<TenantSettings> {
+  return apiRequest('/tenants/current/settings', {
+    method: 'PUT',
+    body: JSON.stringify(input),
+  });
+}
+
 export async function updateWhatsappConfig(input: {
   instanceId?: string;
   instanceToken?: string;
@@ -142,6 +173,13 @@ export async function updateWhatsappConfig(input: {
 
 export async function connectWhatsappInstance(): Promise<WhatsappConnectResult> {
   return apiRequest('/whatsapp/connect', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+}
+
+export async function changeWhatsappPhone(): Promise<WhatsappConnectResult> {
+  return apiRequest('/whatsapp/change-phone', {
     method: 'POST',
     body: JSON.stringify({}),
   });

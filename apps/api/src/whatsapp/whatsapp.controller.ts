@@ -47,6 +47,13 @@ export class WhatsappController {
     return this.whatsappConfigService.createOrConnectForCurrentTenant();
   }
 
+  @Post('change-phone')
+  @UseGuards(RolesGuard)
+  @Roles(SystemUserRole.ADMIN)
+  changePhone() {
+    return this.whatsappConfigService.changePhoneForCurrentTenant();
+  }
+
   @Post('test')
   async test(@Body() dto: TestWhatsappDto) {
     const number = normalizeWhatsappNumber(dto.number);

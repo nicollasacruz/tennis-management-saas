@@ -6,41 +6,106 @@ import { usePathname, useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { ESAF_LOGO } from '@/lib/utils';
 import {
-  LayoutDashboard,
-  Users,
+  Building2,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   ClipboardList,
   CreditCard,
-  Settings,
+  LayoutDashboard,
+  LogOut,
   Menu,
-  X,
-  CalendarDays,
-  Trophy,
   MessageCircle,
+  Settings,
   Smartphone,
+  Trophy,
+  UserCog,
+  Users,
+  X,
 } from 'lucide-react';
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/presencas', label: 'Presenças', icon: CalendarDays },
-  { href: '/alunos', label: 'Alunos', icon: Users },
-  { href: '/planos', label: 'Planos', icon: ClipboardList },
-  { href: '/atividades', label: 'Atividades', icon: Trophy },
-  { href: '/equipa', label: 'Equipa', icon: Settings },
-  { href: '/pagamentos', label: 'Pagamentos', icon: CreditCard },
-  { href: '/comunicacoes', label: 'Comunicações', icon: MessageCircle },
-  { href: '/whatsapp', label: 'WhatsApp', icon: Smartphone },
+const navGroups = [
+  {
+    label: 'Operação',
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/presencas', label: 'Presenças', icon: CalendarDays },
+      { href: '/alunos', label: 'Alunos', icon: Users },
+      { href: '/planos', label: 'Planos', icon: ClipboardList },
+      { href: '/atividades', label: 'Atividades', icon: Trophy },
+      { href: '/pagamentos', label: 'Pagamentos', icon: CreditCard },
+    ],
+  },
+  {
+    label: 'Administração',
+    items: [
+      { href: '/comunicacoes', label: 'Comunicações', icon: MessageCircle },
+      { href: '/whatsapp', label: 'WhatsApp', icon: Smartphone },
+      { href: '/equipa', label: 'Equipa', icon: UserCog },
+      { href: '/definicoes', label: 'Definições', icon: Settings },
+    ],
+  },
 ];
+
+const navItems = navGroups.flatMap((group) => group.items);
+
+function SidebarContent({
+  collapsed,
+  onNavigate,
+}: {
+  collapsed: boolean;
+  onNavigate?: () => void;
+}) {
+  const pathname = usePathname();
+
+  return (
+    <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-4">
+      {navGroups.map((group) => (
+        <div key={group.label} className="flex flex-col gap-1.5">
+          {!collapsed && (
+            <p className="px-3 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#7a8b79]">
+              {group.label}
+            </p>
+          )}
+
+          {group.items.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname.startsWith(item.href);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                title={collapsed ? item.label : undefined}
+                onClick={onNavigate}
+                className={`flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-semibold transition-colors ${
+                  isActive
+                    ? 'bg-[rgba(198,240,92,0.34)] text-[#24410b]'
+                    : 'text-[#566857] hover:bg-black/[0.035] hover:text-[#183223]'
+                } ${collapsed ? 'justify-center' : ''}`}
+              >
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                {!collapsed && <span className="truncate">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </div>
+      ))}
+    </nav>
+  );
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f4f7ed]">
-        <div className="px-6 py-4 bg-white/80 border border-[#d9e5c1] rounded-lg shadow-md text-[#566857] font-semibold">
+      <div className="flex min-h-screen items-center justify-center bg-[#f4f7ed]">
+        <div className="rounded-lg border border-[#d9e5c1] bg-white/80 px-6 py-4 font-semibold text-[#566857]">
           A carregar...
         </div>
       </div>
@@ -53,147 +118,144 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   const activeRoute = navItems.find((item) => pathname.startsWith(item.href));
+  const tenantName = user.tenant?.name ?? 'ESAF';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4f7ed]">
-      {/* Ambient background */}
-      <div className="fixed w-[400px] h-[400px] rounded-full border border-white/30 bg-[rgba(198,240,92,0.08)] pointer-events-none -z-10 -top-[150px] -left-[100px]" />
-      <div className="fixed w-[400px] h-[400px] rounded-full border border-white/30 bg-[rgba(198,240,92,0.08)] pointer-events-none -z-10 -right-[150px] bottom-[200px]" />
+    <div className="min-h-screen bg-[#f4f7ed] text-[#183223]">
+      <header className="sticky top-0 z-[250] border-b border-[#d9e5c1] bg-[rgba(252,253,247,0.95)] px-4 backdrop-blur-xl lg:hidden">
+        <div className="flex h-14 items-center justify-between gap-3">
+          <button
+            type="button"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#d9e5c1] bg-white/70"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Abrir menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold">{activeRoute?.label ?? tenantName}</p>
+            <p className="truncate text-xs font-semibold text-[#566857]">{tenantName}</p>
+          </div>
+          <img src={ESAF_LOGO} alt="ESAF" className="h-9 w-9 rounded-lg border border-[#d9e5c1]" />
+        </div>
+      </header>
 
-      {/* Top Nav */}
-      <header className="sticky top-0 z-[300] bg-[rgba(252,253,247,0.95)] backdrop-blur-xl border-b border-[#d9e5c1]">
-        <div className="flex items-center justify-between h-16 max-w-[1400px] mx-auto px-5 gap-4">
-          {/* Brand */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+      <div className="flex min-h-screen">
+        <aside
+          className={`sticky top-0 hidden h-screen flex-shrink-0 flex-col border-r border-[#d9e5c1] bg-[rgba(252,253,247,0.92)] backdrop-blur-xl transition-[width] duration-150 lg:flex ${
+            collapsed ? 'w-[76px]' : 'w-[268px]'
+          }`}
+        >
+          <div className="flex h-16 items-center gap-3 border-b border-[#d9e5c1] px-4">
             <img
               src={ESAF_LOGO}
               alt="ESAF"
-              className="w-10 h-10 rounded-lg bg-gradient-to-br from-[rgba(198,240,92,0.9)] to-[rgba(239,246,193,0.9)] border border-[rgba(74,104,16,0.12)] p-1"
+              className="h-10 w-10 rounded-lg border border-[rgba(74,104,16,0.12)] bg-[rgba(198,240,92,0.25)] p-1"
             />
-            <div className="flex flex-col leading-tight">
-              <span className="font-extrabold text-[1.1rem] text-[#183223]">ESAF</span>
-              <span className="text-xs text-[#566857] font-medium">Gestão Financeira</span>
-            </div>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-extrabold">{tenantName}</p>
+                <p className="truncate text-xs font-semibold text-[#566857]">Gestão Financeira</p>
+              </div>
+            )}
           </div>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
-                    isActive
-                      ? 'text-[#24410b] bg-[rgba(198,240,92,0.35)]'
-                      : 'text-[#566857] hover:text-[#183223] hover:bg-black/[0.03]'
-                  }`}
+          <SidebarContent collapsed={collapsed} />
+
+          <div className="border-t border-[#d9e5c1] p-3">
+            <div
+              className={`mb-3 flex items-center gap-3 rounded-lg border border-[#e3edcf] bg-[#f8fbf2] p-3 ${
+                collapsed ? 'justify-center' : ''
+              }`}
+            >
+              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[rgba(198,240,92,0.34)]">
+                <Building2 className="h-4 w-4 text-[#24410b]" />
+              </div>
+              {!collapsed && (
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold">{user.fullName}</p>
+                  <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-[#566857]">
+                    {user.role}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className={`flex gap-2 ${collapsed ? 'flex-col' : ''}`}>
+              <button
+                type="button"
+                onClick={() => setCollapsed((value) => !value)}
+                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-[#d9e5c1] bg-white/60 text-sm font-semibold text-[#566857] transition-colors hover:bg-[rgba(198,240,92,0.18)] hover:text-[#183223]"
+                aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+                title={collapsed ? 'Expandir menu' : 'Recolher menu'}
+              >
+                {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                {!collapsed && 'Recolher'}
+              </button>
+              <button
+                type="button"
+                onClick={logout}
+                className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-[#d9e5c1] bg-white/60 text-sm font-semibold text-[#914a39] transition-colors hover:border-[#914a39] hover:bg-[#fcebe7]"
+                aria-label="Sair"
+                title="Sair"
+              >
+                <LogOut className="h-4 w-4" />
+                {!collapsed && 'Sair'}
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {mobileOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-[350] bg-black/35 backdrop-blur-sm lg:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
+            <aside className="fixed inset-y-0 left-0 z-[400] flex w-[292px] flex-col border-r border-[#d9e5c1] bg-[#fcfdf7] shadow-xl lg:hidden">
+              <div className="flex h-16 items-center justify-between border-b border-[#d9e5c1] px-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <img src={ESAF_LOGO} alt="ESAF" className="h-10 w-10 rounded-lg" />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-extrabold">{tenantName}</p>
+                    <p className="truncate text-xs font-semibold text-[#566857]">{user.fullName}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#d9e5c1] bg-white/70"
+                  aria-label="Fechar menu"
                 >
-                  <Icon className="w-4 h-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Actions */}
-          <div className="flex items-center gap-4 flex-shrink-0">
-            <div className="hidden md:flex flex-col items-end gap-0.5">
-              <span className="font-semibold text-sm text-[#183223]">{user.fullName}</span>
-              <span className="text-[0.7rem] text-[#566857] uppercase tracking-wider">
-                {user.role}
-              </span>
-            </div>
-            <button
-              onClick={logout}
-              className="hidden md:block px-3 py-2 border border-[#d9e5c1] rounded-lg bg-transparent text-[#566857] text-sm font-semibold hover:bg-[#fcebe7] hover:border-[#914a39] hover:text-[#914a39] transition-all"
-            >
-              Sair
-            </button>
-
-            {/* Mobile toggle */}
-            <button
-              className="md:hidden w-11 h-11 flex items-center justify-center rounded-lg hover:bg-black/[0.04]"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Abrir menu"
-            >
-              <Menu className="w-5 h-5 text-[#183223]" />
-            </button>
-          </div>
-        </div>
-
-      </header>
-
-      {/* Mobile Drawer */}
-      {sidebarOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[350] animate-[fadeIn_200ms_ease]"
-            onClick={() => setSidebarOpen(false)}
-          />
-          <div className="fixed top-0 right-0 w-[280px] h-screen bg-white z-[400] shadow-xl flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-[#d9e5c1]">
-              <div className="flex items-center gap-3 font-extrabold text-lg">
-                <img src={ESAF_LOGO} alt="ESAF" className="w-9 h-9 rounded-lg" />
-                ESAF
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                onClick={() => setSidebarOpen(false)}
-                className="w-9 h-9 flex items-center justify-center rounded-lg bg-black/5 hover:bg-black/10"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <nav className="flex flex-col p-3 gap-1 flex-1 overflow-y-auto">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname.startsWith(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-semibold transition-colors ${
-                      isActive
-                        ? 'bg-[rgba(198,240,92,0.3)] text-[#24410b]'
-                        : 'hover:bg-black/[0.04]'
-                    }`}
-                  >
-                    <span className="w-8 h-8 flex items-center justify-center rounded-md bg-black/5">
-                      <Icon className="w-4 h-4" />
-                    </span>
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
+              <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} />
 
-            <div className="p-4 border-t border-[#d9e5c1] bg-black/[0.02]">
-              <div className="flex flex-col gap-2 mb-4 pb-4 border-b border-[#d9e5c1]">
-                <span className="font-bold">{user.fullName}</span>
-                <span className="text-sm text-[#566857]">{user.email}</span>
+              <div className="border-t border-[#d9e5c1] p-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    logout();
+                  }}
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#d9e5c1] bg-white/70 text-sm font-semibold text-[#914a39]"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sair
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  setSidebarOpen(false);
-                  logout();
-                }}
-                className="w-full p-3 border border-[#d9e5c1] rounded-lg bg-transparent text-[#914a39] font-semibold hover:bg-[#fcebe7] transition-colors"
-              >
-                Sair
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+            </aside>
+          </>
+        )}
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-[1400px] mx-auto p-5 w-full flex flex-col gap-5">
-        {children}
-      </main>
+        <main className="flex min-w-0 flex-1 flex-col">
+          <div className="w-full max-w-[1440px] px-4 py-5 sm:px-5 lg:px-6">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

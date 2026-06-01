@@ -229,6 +229,18 @@ export type User = {
   role: string;
 };
 
+export type TenantSettings = {
+  id: string;
+  name: string;
+  slug: string;
+  primaryHost: string;
+  status: 'ACTIVE' | 'TRIALING' | 'SUSPENDED' | 'ARCHIVED';
+  logoUrl: string | null;
+  receiptIssuer: string | null;
+  receiptSignatureLabel: string | null;
+  updatedAt: string;
+};
+
 export type WhatsappConnectionStatus = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED';
 
 export type WhatsappConfig = {

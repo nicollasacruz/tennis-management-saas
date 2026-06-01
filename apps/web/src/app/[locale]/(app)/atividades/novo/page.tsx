@@ -42,7 +42,7 @@ export default function NovaAtividadePage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 max-w-xl mx-auto w-full">
+    <div className="flex w-full flex-col gap-5">
       <div className="flex items-center gap-3">
         <Link
           href="/atividades"

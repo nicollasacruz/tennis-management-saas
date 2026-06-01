@@ -71,14 +71,14 @@ export default function EditarAtividadePage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-5 max-w-xl mx-auto w-full">
+      <div className="flex w-full flex-col gap-5">
         <p className="text-[#566857]">A carregar atividade...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-5 max-w-xl mx-auto w-full">
+    <div className="flex w-full flex-col gap-5">
       <div className="flex items-center gap-3">
         <Link
           href="/atividades"

@@ -14,7 +14,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const SESSION_DURATION_MS = 2 * 24 * 60 * 60 * 1000;
+const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
 const TOKEN_KEY = 'token';
 const USER_KEY = 'user';
 const EXPIRES_AT_KEY = 'authExpiresAt';

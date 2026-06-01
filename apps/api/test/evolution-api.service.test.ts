@@ -70,6 +70,62 @@ async function main() {
     global.fetch = originalFetch;
   }
 
+  calls.length = 0;
+  global.fetch = (async (url: string, init: RequestInit) => {
+    calls.push({ url, init });
+
+    return {
+      ok: true,
+      json: async () => ({
+        status: 'SUCCESS',
+        error: false,
+        response: { message: 'Instance logged out' },
+      }),
+    } as any;
+  }) as any;
+
+  try {
+    await makeService().logoutInstance('tenant-esaf');
+
+    assert.equal(calls[0].url, 'http://evo/instance/logout/tenant-esaf');
+    assert.equal(calls[0].init.method, 'DELETE');
+    assert.equal((calls[0].init.headers as Record<string, string>).apikey, 'GLOBAL');
+  } finally {
+    global.fetch = originalFetch;
+  }
+
+  calls.length = 0;
+  global.fetch = (async (url: string, init: RequestInit) => {
+    calls.push({ url, init });
+
+    return {
+      ok: true,
+      json: async () => [
+        {
+          id: 'uuid-1',
+          name: 'tenant-esaf',
+          connectionStatus: 'open',
+          ownerJid: '351910607636@s.whatsapp.net',
+          number: null,
+          token: 'TOKEN',
+        },
+      ],
+    } as any;
+  }) as any;
+
+  try {
+    const status = await makeService().getInstanceStatus('tenant-esaf');
+
+    assert.deepEqual(status, {
+      instanceId: 'uuid-1',
+      phoneNumber: '351910607636',
+      status: 'CONNECTED',
+    });
+    assert.equal(calls[0].url, 'http://evo/instance/fetchInstances');
+  } finally {
+    global.fetch = originalFetch;
+  }
+
   console.log('evolution-api.service: OK');
 }
 

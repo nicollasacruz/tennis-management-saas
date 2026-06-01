@@ -6,6 +6,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api';
 import { Plan, StudentSex } from '@/types';
+import { DEFAULT_DDI, joinPhone } from '@/lib/phone';
 import { getCurrentDateValue, parseEuroToCents } from '@/lib/utils';
 import { ArrowLeft, Save } from 'lucide-react';
 
@@ -31,13 +32,15 @@ export default function NovoAlunoPage() {
     fullName: '',
     birthDate: '',
     sex: '' as StudentSex | '',
-    phone: '',
+    phoneDdi: DEFAULT_DDI,
+    phoneNumber: '',
     email: '',
     taxId: '',
     licenseNumber: '',
     isMinor: false,
     responsibleName: '',
-    responsiblePhone: '',
+    responsiblePhoneDdi: DEFAULT_DDI,
+    responsiblePhoneNumber: '',
     responsibleTaxId: '',
     currentPlanId: '',
     enrollmentStartDate: getCurrentDateValue(),
@@ -59,17 +62,23 @@ export default function NovoAlunoPage() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    const phone = joinPhone(form.phoneDdi, form.phoneNumber);
+    const responsiblePhone = joinPhone(
+      form.responsiblePhoneDdi,
+      form.responsiblePhoneNumber,
+    );
+
     createMutation.mutate({
       fullName: form.fullName,
       birthDate: form.birthDate || null,
       sex: form.sex || null,
-      phone: form.phone,
+      phone,
       email: form.email || undefined,
       taxId: form.taxId || undefined,
       licenseNumber: form.licenseNumber || null,
       isMinor: form.isMinor,
       responsibleName: form.responsibleName || undefined,
-      responsiblePhone: form.responsiblePhone || undefined,
+      responsiblePhone: responsiblePhone || undefined,
       responsibleTaxId: form.responsibleTaxId || undefined,
       currentPlanId: form.currentPlanId,
       enrollmentStartDate: form.currentPlanId && form.enrollmentStartDate ? form.enrollmentStartDate : undefined,
@@ -82,7 +91,7 @@ export default function NovoAlunoPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 max-w-3xl mx-auto w-full">
+    <div className="flex w-full flex-col gap-5">
       <div className="flex items-center gap-3">
         <Link
           href="/alunos"
@@ -135,13 +144,14 @@ export default function NovoAlunoPage() {
                 <option value="OTHER">Outro</option>
               </select>
             </Field>
-            <Field label="Telefone">
-              <input
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full px-3 py-2 border border-[#d9e5c1] rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#c6f05c] focus:border-[#97ce2a]"
-              />
-            </Field>
+            <PhoneField
+              label="Telefone *"
+              ddi={form.phoneDdi}
+              number={form.phoneNumber}
+              onDdiChange={(phoneDdi) => setForm({ ...form, phoneDdi })}
+              onNumberChange={(phoneNumber) => setForm({ ...form, phoneNumber })}
+              required
+            />
             <Field label="Email">
               <input
                 type="email"
@@ -234,13 +244,17 @@ export default function NovoAlunoPage() {
                   className="w-full px-3 py-2 border border-[#d9e5c1] rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#c6f05c] focus:border-[#97ce2a]"
                 />
               </Field>
-              <Field label="Telefone do responsável">
-                <input
-                  value={form.responsiblePhone}
-                  onChange={(e) => setForm({ ...form, responsiblePhone: e.target.value })}
-                  className="w-full px-3 py-2 border border-[#d9e5c1] rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#c6f05c] focus:border-[#97ce2a]"
-                />
-              </Field>
+              <PhoneField
+                label="Telefone do responsável"
+                ddi={form.responsiblePhoneDdi}
+                number={form.responsiblePhoneNumber}
+                onDdiChange={(responsiblePhoneDdi) =>
+                  setForm({ ...form, responsiblePhoneDdi })
+                }
+                onNumberChange={(responsiblePhoneNumber) =>
+                  setForm({ ...form, responsiblePhoneNumber })
+                }
+              />
               <Field label="NIF do responsável">
                 <input
                   value={form.responsibleTaxId}
@@ -290,6 +304,44 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div className="flex flex-col gap-1">
       <label className="text-sm font-semibold text-[#183223]">{label}</label>
       {children}
+    </div>
+  );
+}
+
+function PhoneField({
+  label,
+  ddi,
+  number,
+  onDdiChange,
+  onNumberChange,
+  required = false,
+}: {
+  label: string;
+  ddi: string;
+  number: string;
+  onDdiChange: (value: string) => void;
+  onNumberChange: (value: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-semibold text-[#183223]">{label}</label>
+      <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-2">
+        <input
+          value={ddi}
+          onChange={(e) => onDdiChange(e.target.value)}
+          placeholder="+351"
+          className="w-full px-3 py-2 border border-[#d9e5c1] rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#c6f05c] focus:border-[#97ce2a]"
+        />
+        <input
+          required={required}
+          value={number}
+          onChange={(e) => onNumberChange(e.target.value)}
+          inputMode="tel"
+          placeholder="910000001"
+          className="w-full px-3 py-2 border border-[#d9e5c1] rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#c6f05c] focus:border-[#97ce2a]"
+        />
+      </div>
     </div>
   );
 }

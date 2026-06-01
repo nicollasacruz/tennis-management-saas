@@ -6,6 +6,7 @@ import {
   Res,
   StreamableFile,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { PaymentsService } from './payments.service';
@@ -18,6 +19,7 @@ export class PublicReceiptsController {
     private readonly configService: ConfigService,
   ) {}
 
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @Get(':token.pdf')
   async receiptPdf(
     @Param('token') token: string,

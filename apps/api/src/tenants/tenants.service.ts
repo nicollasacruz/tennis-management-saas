@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { TenantStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -6,12 +6,55 @@ import {
   normalizeTenantHost,
   resolveRequestHost,
 } from './tenant-host';
+import { UpdateTenantSettingsDto } from './dto/update-tenant-settings.dto';
 
 type HeadersLike = Record<string, string | string[] | undefined>;
 
 @Injectable()
 export class TenantsService {
   constructor(private prisma: PrismaService) {}
+
+  async getSettings(tenantId: string) {
+    const tenant = await this.prisma.tenant.findUniqueOrThrow({
+      where: { id: tenantId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        primaryHost: true,
+        status: true,
+        logoUrl: true,
+        receiptIssuer: true,
+        receiptSignatureLabel: true,
+        updatedAt: true,
+      },
+    });
+
+    return tenant;
+  }
+
+  async updateSettings(tenantId: string, dto: UpdateTenantSettingsDto) {
+    const name = this.optionalTrim(dto.name);
+    const logoUrl = this.optionalTrim(dto.logoUrl);
+    const receiptIssuer = this.optionalTrim(dto.receiptIssuer);
+    const receiptSignatureLabel = this.optionalTrim(dto.receiptSignatureLabel);
+
+    if (dto.name !== undefined && !name) {
+      throw new BadRequestException('O nome da organização é obrigatório.');
+    }
+
+    await this.prisma.tenant.update({
+      where: { id: tenantId },
+      data: {
+        ...(dto.name !== undefined ? { name: name! } : {}),
+        ...(dto.logoUrl !== undefined ? { logoUrl } : {}),
+        ...(dto.receiptIssuer !== undefined ? { receiptIssuer } : {}),
+        ...(dto.receiptSignatureLabel !== undefined ? { receiptSignatureLabel } : {}),
+      },
+    });
+
+    return this.getSettings(tenantId);
+  }
 
   async resolveFromHeaders(headers: HeadersLike) {
     const host = resolveRequestHost({
@@ -84,5 +127,14 @@ export class TenantsService {
     }
 
     throw new UnauthorizedException('Organização inativa ou indisponível.');
+  }
+
+  private optionalTrim(value: string | undefined): string | null {
+    if (value === undefined) {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    return trimmed || null;
   }
 }

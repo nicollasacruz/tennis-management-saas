@@ -1,5 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ActivitiesModule } from './activities/activities.module';
 import { AppController } from './app.controller';
 import { AttendancesModule } from './attendances/attendances.module';
@@ -21,6 +23,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
     ConfigModule.forRoot({
       isGlobal: true
     }),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     PrismaModule,
     TenantsModule,
     MailModule,
@@ -35,7 +38,8 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
     PaymentsModule,
     SystemUsersModule
   ],
-  controllers: [AppController]
+  controllers: [AppController],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }]
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

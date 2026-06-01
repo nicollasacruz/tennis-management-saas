@@ -15,7 +15,7 @@ import { TenantsModule } from '../tenants/tenants.module';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: resolveJwtSecret(),
-      signOptions: { expiresIn: '2d' },
+      signOptions: { expiresIn: '8h' },
     }),
   ],
   providers: [AuthService, JwtStrategy],

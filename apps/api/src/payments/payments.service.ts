@@ -32,6 +32,29 @@ export class PaymentsService {
     private readonly tenantContext: TenantContext
   ) {}
 
+  private async getReceiptBranding(tenantId: string) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: {
+        logoUrl: true,
+        receiptIssuer: true,
+        receiptSignatureLabel: true,
+      },
+    });
+
+    return {
+      issuer:
+        tenant?.receiptIssuer ??
+        this.configService.get<string>('RECEIPT_ISSUER') ??
+        'ESAF - Escola de Tenis',
+      logoUrl: tenant?.logoUrl ?? this.configService.get<string>('ESAF_LOGO_URL'),
+      signatureLabel:
+        tenant?.receiptSignatureLabel ??
+        this.configService.get<string>('RECEIPT_SIGNATURE_LABEL') ??
+        'Direção ESAF',
+    };
+  }
+
   async create(dto: CreatePaymentDto) {
     const student = await this.prisma.student.findUnique({
       where: { id: dto.studentId }
@@ -153,7 +176,8 @@ export class PaymentsService {
       include: {
         plan: true,
         receipt: true,
-        student: true
+        student: true,
+        tenant: true
       }
     });
 
@@ -386,6 +410,7 @@ export class PaymentsService {
       );
     }
 
+    const branding = await this.getReceiptBranding(payment.tenantId);
     const buffer = await buildReceiptPdf(
       {
         amountCents: payment.amountCents,
@@ -400,9 +425,7 @@ export class PaymentsService {
           studentName: payment.student.fullName
         }),
         dueDate: payment.dueDate,
-        issuer:
-          this.configService.get<string>('RECEIPT_ISSUER') ??
-          'ESAF - Escola de Tenis',
+        issuer: branding.issuer,
         method: payment.method,
         paidAt: payment.paidAt,
         planName: payment.plan?.name ?? null,
@@ -410,12 +433,10 @@ export class PaymentsService {
         responsibleName: payment.student.isMinor
           ? payment.student.responsibleName ?? null
           : null,
-        signatureLabel:
-          this.configService.get<string>('RECEIPT_SIGNATURE_LABEL') ??
-          'Direção ESAF',
+        signatureLabel: branding.signatureLabel,
         studentName: payment.student.fullName
       },
-      this.configService.get<string>('ESAF_LOGO_URL')
+      branding.logoUrl
     );
 
     return {
@@ -520,9 +541,7 @@ export class PaymentsService {
     }
 
     const { buffer, filename } = await this.generateReceiptPdf(id);
-    const issuer =
-      this.configService.get<string>('RECEIPT_ISSUER') ??
-      'ESAF - Escola de Tenis';
+    const { issuer } = await this.getReceiptBranding(payment.tenantId);
     const subject = `Recibo ${payment.receipt?.number ?? ''} · ${issuer}`.trim();
     const greeting = payment.student.isMinor && payment.student.responsibleName
       ? payment.student.responsibleName
@@ -569,9 +588,7 @@ export class PaymentsService {
     }
 
     const { filename } = await this.generateReceiptPdf(id);
-    const issuer =
-      this.configService.get<string>('RECEIPT_ISSUER') ??
-      'ESAF - Escola de Tenis';
+    const { issuer } = await this.getReceiptBranding(payment.tenantId);
     const greeting = payment.student.isMinor && payment.student.responsibleName
       ? payment.student.responsibleName
       : payment.student.fullName;
