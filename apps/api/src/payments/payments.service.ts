@@ -97,7 +97,8 @@ export class PaymentsService {
       studentName: student.fullName
     });
 
-    const payment = await this.prisma.$transaction(async (tx) => {
+    const payment = await this.withReceiptNumberingRetry(() =>
+      this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.create({
         data: {
           tenantId: this.tenantContext.getTenantIdOrThrow(),
@@ -131,7 +132,7 @@ export class PaymentsService {
           student: true
         }
       });
-    });
+    }));
 
     if (payment.status === PaymentStatus.PAID) {
       await this.enqueueAutomaticReceiptCommunications(payment.id);
@@ -257,7 +258,8 @@ export class PaymentsService {
       studentName: student.fullName
     });
 
-    const payment = await this.prisma.$transaction(async (tx) => {
+    const payment = await this.withReceiptNumberingRetry(() =>
+      this.prisma.$transaction(async (tx) => {
       await tx.payment.update({
         where: { id },
         data: {
@@ -299,7 +301,7 @@ export class PaymentsService {
           student: true
         }
       });
-    });
+    }));
 
     await this.enqueueAutomaticReceiptCommunications(payment.id);
     return payment;
@@ -328,7 +330,8 @@ export class PaymentsService {
       studentName: existing.student.fullName
     });
 
-    const payment = await this.prisma.$transaction(async (tx) => {
+    const payment = await this.withReceiptNumberingRetry(() =>
+      this.prisma.$transaction(async (tx) => {
       await tx.payment.update({
         where: { id },
         data: {
@@ -357,7 +360,7 @@ export class PaymentsService {
           student: true
         }
       });
-    });
+    }));
 
     await this.enqueueAutomaticReceiptCommunications(payment.id);
     return payment;
@@ -669,6 +672,31 @@ export class PaymentsService {
     const sequence = String(currentCount + 1).padStart(4, '0');
 
     return `ESAF-${year}${month}-${sequence}`;
+  }
+
+  private async withReceiptNumberingRetry<T>(fn: () => Promise<T>): Promise<T> {
+    const maxRetries = 3;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        const isUniqueViolation =
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002';
+
+        if (isUniqueViolation && attempt < maxRetries) {
+          this.logger.warn(
+            `Conflito de numeração de recibo, tentativa ${attempt + 1}/${maxRetries}`,
+          );
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    throw new Error('Não foi possível gerar o número do recibo após várias tentativas.');
   }
 }
 

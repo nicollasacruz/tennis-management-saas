@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ActivitiesModule } from './activities/activities.module';
@@ -17,6 +17,7 @@ import { SystemUsersModule } from './system-users/system-users.module';
 import { TenantContextMiddleware } from './tenants/tenant-context.middleware';
 import { TenantsModule } from './tenants/tenants.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
+import { PrismaExceptionFilter } from './filters/prisma-exception.filter';
 
 @Module({
   imports: [
@@ -39,7 +40,10 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
     SystemUsersModule
   ],
   controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }]
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_FILTER, useClass: PrismaExceptionFilter },
+  ]
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

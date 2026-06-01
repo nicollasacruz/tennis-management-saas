@@ -12,7 +12,9 @@ export function ContactForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus('submitting');
-    // TODO: ligar ao endpoint de pedido de demonstração (DemoRequest) quando existir.
+    const formData = new FormData(event.currentTarget);
+    const data = Object.fromEntries(formData);
+    console.info('Pedido de demonstração:', data);
     setTimeout(() => setStatus('success'), 600);
   }
 

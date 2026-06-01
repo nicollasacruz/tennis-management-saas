@@ -8,7 +8,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma, WhatsappJob, WhatsappJobStatus } from '@prisma/client';
-import { buildRetryDate, normalizeMailJobError } from '../mail/mail-queue.helpers';
+import {
+  buildRetryDate,
+  normalizeQueueError,
+  parseBool,
+  parsePositiveInt,
+} from '../mail/mail-queue.helpers';
 import { PrismaService } from '../prisma/prisma.service';
 import { TenantContext } from '../tenants/tenant-context';
 import { createPublicReceiptToken } from '../payments/public-receipt-token';
@@ -29,17 +34,6 @@ type EnqueueWhatsappOptions = {
 type ClaimRow = {
   id: string;
 };
-
-function parseBool(value: string | undefined, fallback: boolean): boolean {
-  if (value === undefined || value === '') return fallback;
-  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
-}
-
-function parsePositiveInt(value: string | undefined, fallback: number): number {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
-  return Math.floor(parsed);
-}
 
 @Injectable()
 export class WhatsappQueueService implements OnModuleInit, OnModuleDestroy {
@@ -179,7 +173,7 @@ export class WhatsappQueueService implements OnModuleInit, OnModuleDestroy {
       }
     } catch (error) {
       this.logger.error(
-        `Erro ao processar fila de WhatsApp: ${normalizeMailJobError(error)}`,
+        `Erro ao processar fila de WhatsApp: ${normalizeQueueError(error)}`,
       );
     } finally {
       this.processing = false;
@@ -288,7 +282,7 @@ export class WhatsappQueueService implements OnModuleInit, OnModuleDestroy {
 
   private async handleJobFailure(job: WhatsappJob, error: unknown) {
     const attempts = job.attempts + 1;
-    const lastError = normalizeMailJobError(error);
+    const lastError = normalizeQueueError(error);
     const failed = attempts >= job.maxAttempts;
 
     await this.prisma.whatsappJob.update({

@@ -15,6 +15,8 @@ import {
   buildRetryDate,
   deserializeMailPayload,
   normalizeMailJobError,
+  parseBool,
+  parsePositiveInt,
   serializeMailPayload,
 } from './mail-queue.helpers';
 
@@ -28,20 +30,6 @@ type EnqueueMailOptions = {
 type ClaimRow = {
   id: string;
 };
-
-function parseBool(value: string | undefined, fallback: boolean): boolean {
-  if (value === undefined || value === '') return fallback;
-  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
-}
-
-function parsePositiveInt(
-  value: string | undefined,
-  fallback: number,
-): number {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
-  return Math.floor(parsed);
-}
 
 @Injectable()
 export class MailQueueService implements OnModuleInit, OnModuleDestroy {
