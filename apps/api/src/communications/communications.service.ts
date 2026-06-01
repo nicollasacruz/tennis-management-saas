@@ -1,7 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { EmailJobStatus, WhatsappJobStatus } from '@prisma/client';
 import { MailQueueService } from '../mail/mail-queue.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { TENANT_DB, TenantPrisma } from '../prisma/tenant-scope';
 import { WhatsappQueueService } from '../whatsapp/whatsapp-queue.service';
 
 export type CommunicationChannel = 'email' | 'whatsapp';
@@ -37,7 +42,7 @@ function getStringPayloadField(payload: unknown, field: string): string {
 @Injectable()
 export class CommunicationsService {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(TENANT_DB) private readonly prisma: TenantPrisma,
     private readonly mailQueueService: MailQueueService,
     private readonly whatsappQueueService: WhatsappQueueService,
   ) {}
@@ -108,14 +113,23 @@ export class CommunicationsService {
       .slice(0, 100);
   }
 
-  retry(channel: string, id: string) {
+  async retry(channel: string, id: string) {
     const parsedChannel = this.parseChannel(channel);
 
     if (parsedChannel === 'email') {
+      // Confirma que o job pertence ao tenant atual (auto-isolado) antes de reenfileirar.
+      const job = await this.prisma.emailJob.findFirst({ where: { id } });
+      if (!job) {
+        throw new NotFoundException('Trabalho de email não encontrado.');
+      }
       return this.mailQueueService.retryFailedJob(id);
     }
 
     if (parsedChannel === 'whatsapp') {
+      const job = await this.prisma.whatsappJob.findFirst({ where: { id } });
+      if (!job) {
+        throw new NotFoundException('Trabalho de WhatsApp não encontrado.');
+      }
       return this.whatsappQueueService.retryFailedJob(id);
     }
 

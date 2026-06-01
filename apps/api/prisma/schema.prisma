@@ -65,23 +65,55 @@ enum TenantStatus {
   ARCHIVED
 }
 
+enum WhatsappConnectionStatus {
+  DISCONNECTED
+  CONNECTING
+  CONNECTED
+}
+
 model Tenant {
-  id                    String         @id @default(cuid())
+  id                    String                 @id @default(cuid())
   name                  String
-  slug                  String         @unique
-  primaryHost           String         @unique
-  status                TenantStatus   @default(ACTIVE)
+  slug                  String                 @unique
+  primaryHost           String                 @unique
+  status                TenantStatus           @default(ACTIVE)
   logoUrl               String?
   receiptIssuer         String?
   receiptSignatureLabel String?
   systemUsers           SystemUser[]
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
+  plans                 Plan[]
+  students              Student[]
+  payments              Payment[]
+  receipts              Receipt[]
+  attendances           Attendance[]
+  activities            Activity[]
+  statusHistories       StudentStatusHistory[]
+  emailJobs             EmailJob[]
+  whatsappJobs          WhatsappJob[]
+  whatsappConfig        TenantWhatsappConfig?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+}
+
+model TenantWhatsappConfig {
+  id              String                   @id @default(cuid())
+  tenantId        String                   @unique
+  tenant          Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  instanceId      String?
+  instanceToken   String?
+  instanceName    String?
+  phoneNumber     String?
+  status          WhatsappConnectionStatus @default(DISCONNECTED)
+  lastConnectedAt DateTime?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
 }
 
 model Plan {
   id              String    @id @default(cuid())
-  name            String    @unique
+  tenantId        String
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  name            String
   monthlyFeeCents Int
   sessionCount    Int?
   description     String?
@@ -89,12 +121,17 @@ model Plan {
   payments        Payment[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
 }
 
 model Student {
   id                      String                  @id @default(cuid())
+  tenantId                String
+  tenant                  Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   fullName                String
-  email                   String?                 @unique
+  email                   String?
   phone                   String
   birthDate               DateTime?
   sex                     StudentSex?
@@ -117,6 +154,9 @@ model Student {
   statusHistory           StudentStatusHistory[]
   createdAt               DateTime                @default(now())
   updatedAt               DateTime                @updatedAt
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
 }
 
 model SystemUser {
@@ -139,6 +179,8 @@ model SystemUser {
 
 model Payment {
   id              String         @id @default(cuid())
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   studentId       String
   planId          String?
   description     String
@@ -154,22 +196,30 @@ model Payment {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
+  @@index([tenantId])
   @@index([studentId, competencyMonth])
   @@index([status, dueDate])
 }
 
 model Receipt {
   id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   paymentId String   @unique
-  number    String   @unique
+  number    String
   issuedAt  DateTime @default(now())
   notes     String?
   payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
+  @@unique([tenantId, number])
+  @@index([tenantId])
 }
 
 model EmailJob {
   id                  String         @id @default(cuid())
+  tenantId            String
+  tenant              Tenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   status              EmailJobStatus @default(PENDING)
   payload             Json
   referenceType       String?
@@ -185,11 +235,14 @@ model EmailJob {
   updatedAt           DateTime       @updatedAt
 
   @@index([status, scheduledAt])
+  @@index([tenantId, status, scheduledAt])
   @@index([referenceType, referenceId])
 }
 
 model WhatsappJob {
   id                  String            @id @default(cuid())
+  tenantId            String
+  tenant              Tenant            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   status              WhatsappJobStatus @default(PENDING)
   payload             Json
   referenceType       String?
@@ -205,11 +258,14 @@ model WhatsappJob {
   updatedAt           DateTime          @updatedAt
 
   @@index([status, scheduledAt])
+  @@index([tenantId, status, scheduledAt])
   @@index([referenceType, referenceId])
 }
 
 model Attendance {
   id             String         @id @default(cuid())
+  tenantId       String
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   studentId      String
   attendanceDate DateTime
   type           AttendanceType @default(TENNIS)
@@ -218,11 +274,14 @@ model Attendance {
   updatedAt      DateTime       @updatedAt
 
   @@unique([studentId, attendanceDate, type])
+  @@index([tenantId])
   @@index([attendanceDate])
 }
 
 model Activity {
   id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   title       String
   description String
   category    String
@@ -232,11 +291,14 @@ model Activity {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([tenantId])
   @@index([startDate])
 }
 
 model StudentStatusHistory {
   id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   studentId String
   isActive  Boolean
   startedAt DateTime
@@ -245,5 +307,6 @@ model StudentStatusHistory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([tenantId])
   @@index([studentId, startedAt])
 }

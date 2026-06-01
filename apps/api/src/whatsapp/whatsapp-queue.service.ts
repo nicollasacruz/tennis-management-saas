@@ -8,8 +8,14 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma, WhatsappJob, WhatsappJobStatus } from '@prisma/client';
-import { buildRetryDate, normalizeMailJobError } from '../mail/mail-queue.helpers';
+import {
+  buildRetryDate,
+  normalizeQueueError,
+  parseBool,
+  parsePositiveInt,
+} from '../mail/mail-queue.helpers';
 import { PrismaService } from '../prisma/prisma.service';
+import { TenantContext } from '../tenants/tenant-context';
 import { createPublicReceiptToken } from '../payments/public-receipt-token';
 import {
   WhatsappDocumentPayload,
@@ -29,17 +35,6 @@ type ClaimRow = {
   id: string;
 };
 
-function parseBool(value: string | undefined, fallback: boolean): boolean {
-  if (value === undefined || value === '') return fallback;
-  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
-}
-
-function parsePositiveInt(value: string | undefined, fallback: number): number {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
-  return Math.floor(parsed);
-}
-
 @Injectable()
 export class WhatsappQueueService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(WhatsappQueueService.name);
@@ -56,6 +51,7 @@ export class WhatsappQueueService implements OnModuleInit, OnModuleDestroy {
     private readonly prisma: PrismaService,
     private readonly whatsappService: WhatsappService,
     private readonly config: ConfigService,
+    private readonly tenantContext: TenantContext,
   ) {
     this.workerEnabled = parseBool(
       this.config.get<string>('WHATSAPP_QUEUE_WORKER_ENABLED'),
@@ -104,6 +100,7 @@ export class WhatsappQueueService implements OnModuleInit, OnModuleDestroy {
   async enqueue(input: WhatsappDocumentPayload, options: EnqueueWhatsappOptions = {}) {
     return this.prisma.whatsappJob.create({
       data: {
+        tenantId: this.tenantContext.getTenantIdOrThrow(),
         payload: serializeWhatsappPayload(input) as Prisma.InputJsonValue,
         referenceType: options.referenceType,
         referenceId: options.referenceId,
@@ -176,7 +173,7 @@ export class WhatsappQueueService implements OnModuleInit, OnModuleDestroy {
       }
     } catch (error) {
       this.logger.error(
-        `Erro ao processar fila de WhatsApp: ${normalizeMailJobError(error)}`,
+        `Erro ao processar fila de WhatsApp: ${normalizeQueueError(error)}`,
       );
     } finally {
       this.processing = false;
@@ -225,27 +222,31 @@ export class WhatsappQueueService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async processJob(job: WhatsappJob) {
-    try {
-      const payload = this.refreshReceiptPayloadUrl(
-        job,
-        deserializeWhatsappPayload(job.payload),
-      );
-      await this.whatsappService.sendDocument(payload);
-      await this.prisma.whatsappJob.update({
-        where: { id: job.id },
-        data: {
-          status: WhatsappJobStatus.SENT,
-          attempts: job.attempts + 1,
-          processingStartedAt: null,
-          sentAt: new Date(),
-          failedAt: null,
-          lastError: null,
-        },
-      });
-      this.logger.log(`WhatsApp enviado pela fila: job=${job.id}`);
-    } catch (error) {
-      await this.handleJobFailure(job, error);
-    }
+    // A fila é global; cada job é processado no contexto do seu tenant para que
+    // o envio resolva a instância Evolution correta (config por tenant).
+    await this.tenantContext.run({ tenantId: job.tenantId }, async () => {
+      try {
+        const payload = this.refreshReceiptPayloadUrl(
+          job,
+          deserializeWhatsappPayload(job.payload),
+        );
+        await this.whatsappService.sendDocument(payload);
+        await this.prisma.whatsappJob.update({
+          where: { id: job.id },
+          data: {
+            status: WhatsappJobStatus.SENT,
+            attempts: job.attempts + 1,
+            processingStartedAt: null,
+            sentAt: new Date(),
+            failedAt: null,
+            lastError: null,
+          },
+        });
+        this.logger.log(`WhatsApp enviado pela fila: job=${job.id}`);
+      } catch (error) {
+        await this.handleJobFailure(job, error);
+      }
+    });
   }
 
   private refreshReceiptPayloadUrl(
@@ -281,7 +282,7 @@ export class WhatsappQueueService implements OnModuleInit, OnModuleDestroy {
 
   private async handleJobFailure(job: WhatsappJob, error: unknown) {
     const attempts = job.attempts + 1;
-    const lastError = normalizeMailJobError(error);
+    const lastError = normalizeQueueError(error);
     const failed = attempts >= job.maxAttempts;
 
     await this.prisma.whatsappJob.update({

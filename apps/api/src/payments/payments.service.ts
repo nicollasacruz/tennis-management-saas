@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException
@@ -7,7 +8,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PaymentStatus, Prisma } from '@prisma/client';
 import { MailQueueService } from '../mail/mail-queue.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { TENANT_DB, TenantPrisma, TenantTx } from '../prisma/tenant-scope';
+import { TenantContext } from '../tenants/tenant-context';
 import { normalizeWhatsappNumber } from '../whatsapp/whatsapp.helpers';
 import { WhatsappQueueService } from '../whatsapp/whatsapp-queue.service';
 import { BillingService } from './billing.service';
@@ -23,11 +25,35 @@ export class PaymentsService {
 
   constructor(
     private readonly billingService: BillingService,
-    private readonly prisma: PrismaService,
+    @Inject(TENANT_DB) private readonly prisma: TenantPrisma,
     private readonly configService: ConfigService,
     private readonly mailQueueService: MailQueueService,
-    private readonly whatsappQueueService: WhatsappQueueService
+    private readonly whatsappQueueService: WhatsappQueueService,
+    private readonly tenantContext: TenantContext
   ) {}
+
+  private async getReceiptBranding(tenantId: string) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: {
+        logoUrl: true,
+        receiptIssuer: true,
+        receiptSignatureLabel: true,
+      },
+    });
+
+    return {
+      issuer:
+        tenant?.receiptIssuer ??
+        this.configService.get<string>('RECEIPT_ISSUER') ??
+        'ESAF - Escola de Tenis',
+      logoUrl: tenant?.logoUrl ?? this.configService.get<string>('ESAF_LOGO_URL'),
+      signatureLabel:
+        tenant?.receiptSignatureLabel ??
+        this.configService.get<string>('RECEIPT_SIGNATURE_LABEL') ??
+        'Direção ESAF',
+    };
+  }
 
   async create(dto: CreatePaymentDto) {
     const student = await this.prisma.student.findUnique({
@@ -71,9 +97,11 @@ export class PaymentsService {
       studentName: student.fullName
     });
 
-    const payment = await this.prisma.$transaction(async (tx) => {
+    const payment = await this.withReceiptNumberingRetry(() =>
+      this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.create({
         data: {
+          tenantId: this.tenantContext.getTenantIdOrThrow(),
           amountCents,
           competencyMonth,
           description,
@@ -89,6 +117,7 @@ export class PaymentsService {
       if (status === PaymentStatus.PAID) {
         await tx.receipt.create({
           data: {
+            tenantId: this.tenantContext.getTenantIdOrThrow(),
             number: await this.buildReceiptNumber(tx, paidAt ?? new Date()),
             paymentId: payment.id
           }
@@ -103,7 +132,7 @@ export class PaymentsService {
           student: true
         }
       });
-    });
+    }));
 
     if (payment.status === PaymentStatus.PAID) {
       await this.enqueueAutomaticReceiptCommunications(payment.id);
@@ -140,6 +169,24 @@ export class PaymentsService {
       },
       orderBy: [{ competencyMonth: 'desc' }, { createdAt: 'desc' }]
     });
+  }
+
+  async findOne(id: string) {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id },
+      include: {
+        plan: true,
+        receipt: true,
+        student: true,
+        tenant: true
+      }
+    });
+
+    if (!payment) {
+      throw new NotFoundException('Pagamento não encontrado.');
+    }
+
+    return payment;
   }
 
   async update(id: string, dto: UpdatePaymentDto) {
@@ -211,7 +258,8 @@ export class PaymentsService {
       studentName: student.fullName
     });
 
-    const payment = await this.prisma.$transaction(async (tx) => {
+    const payment = await this.withReceiptNumberingRetry(() =>
+      this.prisma.$transaction(async (tx) => {
       await tx.payment.update({
         where: { id },
         data: {
@@ -230,6 +278,7 @@ export class PaymentsService {
       if (status === PaymentStatus.PAID && !existing.receipt) {
         await tx.receipt.create({
           data: {
+            tenantId: this.tenantContext.getTenantIdOrThrow(),
             number: await this.buildReceiptNumber(tx, paidAt ?? new Date()),
             paymentId: id
           }
@@ -252,7 +301,7 @@ export class PaymentsService {
           student: true
         }
       });
-    });
+    }));
 
     await this.enqueueAutomaticReceiptCommunications(payment.id);
     return payment;
@@ -281,7 +330,8 @@ export class PaymentsService {
       studentName: existing.student.fullName
     });
 
-    const payment = await this.prisma.$transaction(async (tx) => {
+    const payment = await this.withReceiptNumberingRetry(() =>
+      this.prisma.$transaction(async (tx) => {
       await tx.payment.update({
         where: { id },
         data: {
@@ -295,6 +345,7 @@ export class PaymentsService {
       if (!existing.receipt) {
         await tx.receipt.create({
           data: {
+            tenantId: this.tenantContext.getTenantIdOrThrow(),
             number: await this.buildReceiptNumber(tx, paidAt),
             paymentId: id
           }
@@ -309,7 +360,7 @@ export class PaymentsService {
           student: true
         }
       });
-    });
+    }));
 
     await this.enqueueAutomaticReceiptCommunications(payment.id);
     return payment;
@@ -362,6 +413,7 @@ export class PaymentsService {
       );
     }
 
+    const branding = await this.getReceiptBranding(payment.tenantId);
     const buffer = await buildReceiptPdf(
       {
         amountCents: payment.amountCents,
@@ -376,9 +428,7 @@ export class PaymentsService {
           studentName: payment.student.fullName
         }),
         dueDate: payment.dueDate,
-        issuer:
-          this.configService.get<string>('RECEIPT_ISSUER') ??
-          'ESAF - Escola de Tenis',
+        issuer: branding.issuer,
         method: payment.method,
         paidAt: payment.paidAt,
         planName: payment.plan?.name ?? null,
@@ -386,12 +436,10 @@ export class PaymentsService {
         responsibleName: payment.student.isMinor
           ? payment.student.responsibleName ?? null
           : null,
-        signatureLabel:
-          this.configService.get<string>('RECEIPT_SIGNATURE_LABEL') ??
-          'Direção ESAF',
+        signatureLabel: branding.signatureLabel,
         studentName: payment.student.fullName
       },
-      this.configService.get<string>('ESAF_LOGO_URL')
+      branding.logoUrl
     );
 
     return {
@@ -496,9 +544,7 @@ export class PaymentsService {
     }
 
     const { buffer, filename } = await this.generateReceiptPdf(id);
-    const issuer =
-      this.configService.get<string>('RECEIPT_ISSUER') ??
-      'ESAF - Escola de Tenis';
+    const { issuer } = await this.getReceiptBranding(payment.tenantId);
     const subject = `Recibo ${payment.receipt?.number ?? ''} · ${issuer}`.trim();
     const greeting = payment.student.isMinor && payment.student.responsibleName
       ? payment.student.responsibleName
@@ -545,9 +591,7 @@ export class PaymentsService {
     }
 
     const { filename } = await this.generateReceiptPdf(id);
-    const issuer =
-      this.configService.get<string>('RECEIPT_ISSUER') ??
-      'ESAF - Escola de Tenis';
+    const { issuer } = await this.getReceiptBranding(payment.tenantId);
     const greeting = payment.student.isMinor && payment.student.responsibleName
       ? payment.student.responsibleName
       : payment.student.fullName;
@@ -605,7 +649,7 @@ export class PaymentsService {
   }
 
   private async buildReceiptNumber(
-    tx: Prisma.TransactionClient,
+    tx: TenantTx,
     issuedAt: Date
   ) {
     const monthStart = new Date(issuedAt.getFullYear(), issuedAt.getMonth(), 1);
@@ -628,6 +672,31 @@ export class PaymentsService {
     const sequence = String(currentCount + 1).padStart(4, '0');
 
     return `ESAF-${year}${month}-${sequence}`;
+  }
+
+  private async withReceiptNumberingRetry<T>(fn: () => Promise<T>): Promise<T> {
+    const maxRetries = 3;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        const isUniqueViolation =
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002';
+
+        if (isUniqueViolation && attempt < maxRetries) {
+          this.logger.warn(
+            `Conflito de numeração de recibo, tentativa ${attempt + 1}/${maxRetries}`,
+          );
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    throw new Error('Não foi possível gerar o número do recibo após várias tentativas.');
   }
 }
 

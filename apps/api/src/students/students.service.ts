@@ -1,10 +1,12 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException
 } from '@nestjs/common';
 import { FirstMonthBillingPolicy, Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { TENANT_DB, TenantPrisma } from '../prisma/tenant-scope';
+import { TenantContext } from '../tenants/tenant-context';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 
@@ -35,7 +37,10 @@ type StudentRecord = Prisma.StudentGetPayload<{
 
 @Injectable()
 export class StudentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(TENANT_DB) private readonly prisma: TenantPrisma,
+    private readonly tenantContext: TenantContext,
+  ) {}
 
   async create(dto: CreateStudentDto) {
     const planId = await this.normalizePlanId(dto.currentPlanId);
@@ -48,6 +53,7 @@ export class StudentsService {
     return this.prisma.$transaction(async (tx) => {
       const student = await tx.student.create({
         data: {
+          tenantId: this.tenantContext.getTenantIdOrThrow(),
           birthDate,
           currentPlanId: planId,
           doesPhysicalTraining: dto.doesPhysicalTraining ?? false,
@@ -76,6 +82,7 @@ export class StudentsService {
 
       await tx.studentStatusHistory.create({
         data: {
+          tenantId: this.tenantContext.getTenantIdOrThrow(),
           isActive: student.isActive,
           startedAt: student.createdAt,
           studentId: student.id
@@ -221,6 +228,7 @@ export class StudentsService {
 
           await tx.studentStatusHistory.create({
             data: {
+              tenantId: this.tenantContext.getTenantIdOrThrow(),
               isActive: dto.isActive!,
               startedAt: statusChangedAt,
               studentId: id

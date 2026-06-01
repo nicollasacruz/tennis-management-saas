@@ -111,3 +111,22 @@ export function normalizeMailJobError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   return message.slice(0, 2000);
 }
+
+export function parseBool(value: string | undefined, fallback: boolean): boolean {
+  if (value === undefined || value === '') return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
+}
+
+export function parsePositiveInt(
+  value: string | undefined,
+  fallback: number,
+): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.floor(parsed);
+}
+
+export function normalizeQueueError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.slice(0, 2000);
+}

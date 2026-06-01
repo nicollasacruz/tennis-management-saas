@@ -32,8 +32,8 @@ services:
       - evolution_postgres_data:/var/lib/postgresql/data
       - ./docker/evolution-postgres/init:/docker-entrypoint-initdb.d:ro
 
-  evolution-go:
-    image: evoapicloud/evolution-go:latest
+  evolution-api:
+    image: atendai/evolution-api:v2.1.1
     profiles:
       - evolution
     restart: unless-stopped
@@ -42,17 +42,28 @@ services:
         condition: service_healthy
     environment:
       SERVER_PORT: 8080
-      CLIENT_NAME: ${EVOLUTION_GO_CLIENT_NAME:-esaf}
-      GLOBAL_API_KEY: ${EVOLUTION_GO_API_KEY:-}
-      POSTGRES_AUTH_DB: postgresql://${EVOLUTION_POSTGRES_USER:-evolution}:${EVOLUTION_POSTGRES_PASSWORD:-evolution_secret}@evolution-postgres:5432/evogo_auth?sslmode=disable
-      POSTGRES_USERS_DB: postgresql://${EVOLUTION_POSTGRES_USER:-evolution}:${EVOLUTION_POSTGRES_PASSWORD:-evolution_secret}@evolution-postgres:5432/evogo_users?sslmode=disable
-      DATABASE_SAVE_MESSAGES: ${EVOLUTION_GO_DATABASE_SAVE_MESSAGES:-false}
-      WADEBUG: ${EVOLUTION_GO_WADEBUG:-INFO}
-      LOGTYPE: ${EVOLUTION_GO_LOGTYPE:-console}
-      CONNECT_ON_STARTUP: ${EVOLUTION_GO_CONNECT_ON_STARTUP:-true}
-      VIRTUAL_HOST: ${EVOLUTION_GO_VIRTUAL_HOST:-tenisevolution.esaf.run.place}
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:-${EVOLUTION_GO_API_KEY:-change-me-evolution-key}}
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://${EVOLUTION_POSTGRES_USER:-evolution}:${EVOLUTION_POSTGRES_PASSWORD:-evolution_secret}@evolution-postgres:5432/evolution?schema=public
+      DATABASE_CONNECTION_CLIENT_NAME: evolution_exchange
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "false"
+      DATABASE_SAVE_MESSAGE_UPDATE: "false"
+      DATABASE_SAVE_DATA_CONTACTS: "false"
+      DATABASE_SAVE_DATA_CHATS: "false"
+      DATABASE_SAVE_DATA_HISTORIC: "false"
+      DATABASE_SAVE_DATA_LABELS: "false"
+      CACHE_REDIS_ENABLED: "false"
+      CACHE_LOCAL_ENABLED: "true"
+      CONFIG_SESSION_PHONE_VERSION: ${EVOLUTION_CONFIG_SESSION_PHONE_VERSION:-2.3000.1033773198}
+      DEL_INSTANCE: "false"
+      QRCODE_LIMIT: "30"
+      QRCODE_COLOR: "#198754"
+      LANGUAGE: en
+      VIRTUAL_HOST: ${EVOLUTION_API_VIRTUAL_HOST:-${EVOLUTION_GO_VIRTUAL_HOST:-tenisevolution.esaf.run.place}}
       VIRTUAL_PORT: 8080
-      LETSENCRYPT_HOST: ${EVOLUTION_GO_VIRTUAL_HOST:-tenisevolution.esaf.run.place}
+      LETSENCRYPT_HOST: ${EVOLUTION_API_VIRTUAL_HOST:-${EVOLUTION_GO_VIRTUAL_HOST:-tenisevolution.esaf.run.place}}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-nicollasacruz@gmail.com}
     expose:
       - "8080"
@@ -69,6 +80,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
       ESAF_LOGO_URL: ${ESAF_LOGO_URL}
       FRONTEND_ORIGIN: "*"
       SMTP_ENABLED: ${SMTP_ENABLED:-true}
@@ -90,10 +102,10 @@ services:
       EMAIL_QUEUE_STALE_AFTER_SECONDS: ${EMAIL_QUEUE_STALE_AFTER_SECONDS:-300}
       SAAS_ROOT_DOMAIN: ${SAAS_ROOT_DOMAIN:-tenis.esaf.run.place}
       DEFAULT_TENANT_SLUG: ${DEFAULT_TENANT_SLUG:-esaf}
-      EVOLUTION_GO_BASE_URL: ${EVOLUTION_GO_BASE_URL:-http://evolution-go:8080}
-      EVOLUTION_GO_API_KEY: ${EVOLUTION_GO_API_KEY:-}
-      EVOLUTION_GO_INSTANCE_ID: ${EVOLUTION_GO_INSTANCE_ID:-}
-      EVOLUTION_GO_INSTANCE_TOKEN: ${EVOLUTION_GO_INSTANCE_TOKEN:-}
+      EVOLUTION_API_BASE_URL: ${EVOLUTION_API_BASE_URL:-${EVOLUTION_GO_BASE_URL:-http://evolution-api:8080}}
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY:-${EVOLUTION_GO_API_KEY:-}}
+      EVOLUTION_API_INSTANCE_ID: ${EVOLUTION_API_INSTANCE_ID:-${EVOLUTION_GO_INSTANCE_ID:-}}
+      EVOLUTION_API_INSTANCE_TOKEN: ${EVOLUTION_API_INSTANCE_TOKEN:-${EVOLUTION_GO_INSTANCE_TOKEN:-}}
       PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-https://esaf.run.place/api}
       RECEIPT_PUBLIC_TOKEN_SECRET: ${RECEIPT_PUBLIC_TOKEN_SECRET:-}
       WHATSAPP_QUEUE_WORKER_ENABLED: ${WHATSAPP_QUEUE_WORKER_ENABLED:-true}

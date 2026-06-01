@@ -1,0 +1,154 @@
+{
+  "meta": {
+    "tagline": "Software de gestión para escuelas y clubes de tenis",
+    "description": "Plataforma SaaS multiorganización para gestionar alumnos, cuotas, recibos, asistencia y comunicación automática por WhatsApp y email. Pide una demo."
+  },
+  "nav": {
+    "categorias": "Categorías",
+    "funcionalidades": "Funciones",
+    "precos": "Precios",
+    "demo": "Demo",
+    "entrar": "Entrar",
+    "pedirDemo": "Pedir demo"
+  },
+  "hero": {
+    "badge": "SaaS para gestión de tenis",
+    "titlePre": "Gestiona tu escuela de tenis",
+    "titleHighlight": "de principio a fin",
+    "titlePost": ".",
+    "subtitle": "Alumnos, cuotas, recibos, asistencia y comunicación automática por WhatsApp y email — en una sola plataforma multiorganización, con los datos de cada club aislados.",
+    "ctaPrimary": "Pedir demo",
+    "ctaSecondary": "Ver precios",
+    "fineprint": "Sin tarjeta · Configuración en minutos · Cancela cuando quieras"
+  },
+  "dashboard": {
+    "org": "Club del Norte",
+    "label": "Panel · Junio",
+    "live": "En vivo",
+    "recebido": "Cobrado",
+    "alunosAtivos": "Alumnos activos",
+    "cobranca": "Cobro",
+    "receitaMensal": "Ingresos mensuales",
+    "toastTitle": "Recibo enviado por WhatsApp",
+    "toastSub": "João Matos · hace 2 min"
+  },
+  "stats": {
+    "items": [
+      { "numero": "5 min", "texto": "para configurar tu organización" },
+      { "numero": "100%", "texto": "datos aislados por organización" },
+      { "numero": "2 canales", "texto": "WhatsApp y email automáticos" }
+    ]
+  },
+  "categorias": {
+    "eyebrow": "Categorías",
+    "titulo": "Hecho para todo el ecosistema del tenis",
+    "texto": "Una plataforma, varios perfiles de organización. Elige tu categoría y empieza hoy.",
+    "items": [
+      { "titulo": "Escuelas de tenis", "texto": "Escuelas y formación de base con clases, cuotas y asistencia por alumno." },
+      { "titulo": "Clubes y academias", "texto": "Gestión financiera completa, recibos e informes para varias disciplinas." },
+      { "titulo": "Entrenadores independientes", "texto": "Sigue a tus alumnos, cobra cuotas y envía recibos sin complicaciones." },
+      { "titulo": "Tenis adaptado", "texto": "Programas inclusivos con el mismo rigor de gestión y comunicación." },
+      { "titulo": "Circuitos y torneos", "texto": "Publica actividades y eventos y mantén informada a tu comunidad." }
+    ]
+  },
+  "funcionalidades": {
+    "eyebrow": "Funciones",
+    "titulo": "Todo lo que un club necesita, sin hojas de cálculo",
+    "texto": "Del registro del alumno al recibo en WhatsApp — automatizado y organizado por organización.",
+    "items": [
+      { "titulo": "Alumnos e inscripciones", "texto": "Fichas completas, planes, estado de matrícula e historial — todo en un solo lugar." },
+      { "titulo": "Cuotas y cobro", "texto": "Generación automática de cargos mensuales, estado de pago y cálculo por plan." },
+      { "titulo": "Recibos automáticos", "texto": "Emisión de recibos en PDF, numeración por organización y envío con un clic." },
+      { "titulo": "Asistencia y entrenos", "texto": "Registro rápido de asistencia por clase, con tipos de entreno e informes." },
+      { "titulo": "WhatsApp y email", "texto": "Colas de envío automáticas de recibos y avisos, con reintento si fallan." },
+      { "titulo": "Panel financiero", "texto": "Cobrado del mes, tasa de cobro, morosos y evolución anual en tiempo real." }
+    ]
+  },
+  "precos": {
+    "eyebrow": "Precios",
+    "titulo": "Planes simples que crecen contigo",
+    "texto": "Las cuotas de tus alumnos se gestionan dentro de la plataforma — independientes de tu plan.",
+    "popular": "Más popular",
+    "items": [
+      {
+        "nome": "Trial",
+        "preco": "€0",
+        "periodo": "14 días",
+        "descricao": "Pruébalo todo, sin tarjeta.",
+        "cta": "Empezar gratis",
+        "inclui": ["Hasta 30 alumnos", "1 organización", "Recibos en PDF", "Asistencia y panel", "Soporte por email"]
+      },
+      {
+        "nome": "Club",
+        "preco": "€49",
+        "periodo": "/ mes",
+        "descricao": "Para escuelas y clubes en marcha.",
+        "cta": "Pedir demo",
+        "inclui": ["Alumnos ilimitados", "WhatsApp + email automáticos", "Cobro mensual automático", "Actividades y torneos", "Informes financieros"]
+      },
+      {
+        "nome": "Red",
+        "preco": "A medida",
+        "periodo": "",
+        "descricao": "Para redes con varias organizaciones.",
+        "cta": "Hablar con ventas",
+        "inclui": ["Multiorganización", "Dominio propio por organización", "Aislamiento total de datos", "Onboarding dedicado", "SLA y soporte prioritario"]
+      }
+    ]
+  },
+  "demo": {
+    "eyebrow": "Demo",
+    "titulo": "Mira {brand} funcionando con los datos de tu club",
+    "texto": "Cuéntanos sobre tu organización y preparamos una demo a medida. Sin compromiso.",
+    "bullets": [
+      "Configura tu organización en minutos",
+      "Importa tus alumnos y planes",
+      "Recibos y mensajes automáticos funcionando"
+    ]
+  },
+  "form": {
+    "nome": "Nombre completo",
+    "email": "Email profesional",
+    "organizacao": "Organización / club",
+    "telefone": "Teléfono",
+    "alunos": "Nº de alumnos",
+    "alunosPlaceholder": "Selecciona una opción",
+    "alunos1": "Hasta 30",
+    "alunos2": "31 a 100",
+    "alunos3": "101 a 300",
+    "alunos4": "Más de 300",
+    "categoria": "Categoría",
+    "categoriaPlaceholder": "Selecciona una opción",
+    "catEscola": "Escuela de tenis",
+    "catClube": "Club / academia",
+    "catCoach": "Entrenador independiente",
+    "catAdaptado": "Tenis adaptado",
+    "catRede": "Red de organizaciones",
+    "mensagem": "Mensaje",
+    "mensagemPlaceholder": "Cuéntanos cómo gestionas hoy los pagos y qué buscas.",
+    "privacidade": "Acepto la política de privacidad.",
+    "submit": "Pedir demo",
+    "submitting": "Enviando…",
+    "successTitle": "Solicitud enviada",
+    "successText": "¡Gracias! Te contactaremos pronto para agendar tu demo."
+  },
+  "footer": {
+    "desc": "Software de gestión para escuelas y clubes de tenis. Alumnos, pagos, recibos y comunicación — en una sola plataforma multiorganización.",
+    "produto": "Producto",
+    "contacto": "Contacto",
+    "resposta": "Respuesta en 1 día hábil",
+    "rights": "Todos los derechos reservados.",
+    "slogan": "Gestión de tenis, sin fricción."
+  },
+  "login": {
+    "subtitle": "Gestión de tenis",
+    "email": "Email",
+    "emailPlaceholder": "usuario@ejemplo.com",
+    "senha": "Contraseña",
+    "senhaPlaceholder": "••••••••",
+    "entrar": "Entrar",
+    "entrando": "Entrando...",
+    "erro": "Error al iniciar sesión",
+    "demoTitle": "Cuentas de demostración:"
+  }
+}

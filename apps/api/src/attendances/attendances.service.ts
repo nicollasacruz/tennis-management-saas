@@ -1,16 +1,21 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException
 } from '@nestjs/common';
 import { AttendanceType } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { TENANT_DB, TenantPrisma } from '../prisma/tenant-scope';
+import { TenantContext } from '../tenants/tenant-context';
 import { BatchAttendanceDto } from './dto/batch-attendance.dto';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 
 @Injectable()
 export class AttendancesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(TENANT_DB) private readonly prisma: TenantPrisma,
+    private readonly tenantContext: TenantContext,
+  ) {}
 
   async list(month?: string) {
     const { monthStart, nextMonthStart } = this.resolveMonthRange(month);
@@ -63,6 +68,7 @@ export class AttendancesService {
         }
       },
       create: {
+        tenantId: this.tenantContext.getTenantIdOrThrow(),
         attendanceDate,
         studentId: dto.studentId,
         type
@@ -131,6 +137,7 @@ export class AttendancesService {
             }
           },
           create: {
+            tenantId: this.tenantContext.getTenantIdOrThrow(),
             studentId: dto.studentId,
             attendanceDate,
             type

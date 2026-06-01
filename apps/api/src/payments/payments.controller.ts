@@ -43,6 +43,11 @@ export class PaymentsController {
     return this.paymentsService.generateCurrentMonthCharges();
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.paymentsService.findOne(id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdatePaymentDto) {
     return this.paymentsService.update(id, dto);

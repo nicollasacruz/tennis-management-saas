@@ -9,11 +9,14 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { EmailJob, EmailJobStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { TenantContext } from '../tenants/tenant-context';
 import { MailService, SendMailInput } from './mail.service';
 import {
   buildRetryDate,
   deserializeMailPayload,
   normalizeMailJobError,
+  parseBool,
+  parsePositiveInt,
   serializeMailPayload,
 } from './mail-queue.helpers';
 
@@ -27,20 +30,6 @@ type EnqueueMailOptions = {
 type ClaimRow = {
   id: string;
 };
-
-function parseBool(value: string | undefined, fallback: boolean): boolean {
-  if (value === undefined || value === '') return fallback;
-  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
-}
-
-function parsePositiveInt(
-  value: string | undefined,
-  fallback: number,
-): number {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
-  return Math.floor(parsed);
-}
 
 @Injectable()
 export class MailQueueService implements OnModuleInit, OnModuleDestroy {
@@ -58,6 +47,7 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
     private readonly prisma: PrismaService,
     private readonly mailService: MailService,
     private readonly config: ConfigService,
+    private readonly tenantContext: TenantContext,
   ) {
     this.workerEnabled = parseBool(
       this.config.get<string>('EMAIL_QUEUE_WORKER_ENABLED'),
@@ -106,6 +96,7 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
   async enqueue(input: SendMailInput, options: EnqueueMailOptions = {}) {
     return this.prisma.emailJob.create({
       data: {
+        tenantId: this.tenantContext.getTenantIdOrThrow(),
         payload: serializeMailPayload(input) as Prisma.InputJsonValue,
         referenceType: options.referenceType,
         referenceId: options.referenceId,
@@ -226,24 +217,28 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async processJob(job: EmailJob) {
-    try {
-      const payload = deserializeMailPayload(job.payload);
-      await this.mailService.send(payload);
-      await this.prisma.emailJob.update({
-        where: { id: job.id },
-        data: {
-          status: EmailJobStatus.SENT,
-          attempts: job.attempts + 1,
-          processingStartedAt: null,
-          sentAt: new Date(),
-          failedAt: null,
-          lastError: null,
-        },
-      });
-      this.logger.log(`Email enviado pela fila: job=${job.id}`);
-    } catch (error) {
-      await this.handleJobFailure(job, error);
-    }
+    // Processa cada job no contexto do seu tenant (a fila é global; o tenant
+    // vem da própria linha do job).
+    await this.tenantContext.run({ tenantId: job.tenantId }, async () => {
+      try {
+        const payload = deserializeMailPayload(job.payload);
+        await this.mailService.send(payload);
+        await this.prisma.emailJob.update({
+          where: { id: job.id },
+          data: {
+            status: EmailJobStatus.SENT,
+            attempts: job.attempts + 1,
+            processingStartedAt: null,
+            sentAt: new Date(),
+            failedAt: null,
+            lastError: null,
+          },
+        });
+        this.logger.log(`Email enviado pela fila: job=${job.id}`);
+      } catch (error) {
+        await this.handleJobFailure(job, error);
+      }
+    });
   }
 
   private async handleJobFailure(job: EmailJob, error: unknown) {

@@ -1,18 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../prisma/prisma.service';
+import { TENANT_DB, TenantPrisma } from '../prisma/tenant-scope';
+import { TenantContext } from '../tenants/tenant-context';
 import { CreateSystemUserDto } from './dto/create-system-user.dto';
 
 @Injectable()
 export class SystemUsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(TENANT_DB) private readonly prisma: TenantPrisma,
+    private readonly tenantContext: TenantContext,
+  ) {}
 
-  async create(dto: CreateSystemUserDto, tenantId: string) {
+  async create(dto: CreateSystemUserDto) {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    
+
     return this.prisma.systemUser.create({
       data: {
-        tenantId,
+        tenantId: this.tenantContext.getTenantIdOrThrow(),
         email: dto.email,
         password: hashedPassword,
         fullName: dto.fullName,
@@ -35,9 +39,8 @@ export class SystemUsersService {
     });
   }
 
-  list(tenantId: string) {
+  list() {
     return this.prisma.systemUser.findMany({
-      where: { tenantId },
       orderBy: [{ isActive: 'desc' }, { fullName: 'asc' }]
     });
   }

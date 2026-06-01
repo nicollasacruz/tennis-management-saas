@@ -1,14 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { TENANT_DB, TenantPrisma } from '../prisma/tenant-scope';
+import { TenantContext } from '../tenants/tenant-context';
 import { CreateActivityDto } from './dto/create-activity.dto';
 
 @Injectable()
 export class ActivitiesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(TENANT_DB) private readonly prisma: TenantPrisma,
+    private readonly tenantContext: TenantContext,
+  ) {}
 
   create(dto: CreateActivityDto) {
     return this.prisma.activity.create({
       data: {
+        tenantId: this.tenantContext.getTenantIdOrThrow(),
         category: dto.category,
         description: dto.description,
         endDate: dto.endDate ? new Date(dto.endDate) : null,

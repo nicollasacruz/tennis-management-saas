@@ -229,6 +229,37 @@ export type User = {
   role: string;
 };
 
+export type TenantSettings = {
+  id: string;
+  name: string;
+  slug: string;
+  primaryHost: string;
+  status: 'ACTIVE' | 'TRIALING' | 'SUSPENDED' | 'ARCHIVED';
+  logoUrl: string | null;
+  receiptIssuer: string | null;
+  receiptSignatureLabel: string | null;
+  updatedAt: string;
+};
+
+export type WhatsappConnectionStatus = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED';
+
+export type WhatsappConfig = {
+  configured: boolean;
+  instanceId: string | null;
+  instanceName: string | null;
+  phoneNumber: string | null;
+  hasToken: boolean;
+  status: WhatsappConnectionStatus;
+  lastConnectedAt: string | null;
+  updatedAt: string | null;
+};
+
+export type WhatsappConnectResult = {
+  config: WhatsappConfig;
+  qrCodeBase64: string | null;
+  qrCodeText: string | null;
+};
+
 export type Activity = {
   category: string;
   createdAt: string;

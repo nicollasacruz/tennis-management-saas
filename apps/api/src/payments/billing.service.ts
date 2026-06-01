@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
+  FirstMonthBillingPolicy,
   PaymentMethod,
   PaymentStatus,
   Prisma
 } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { TENANT_DB, TenantPrisma } from '../prisma/tenant-scope';
+import { TenantContext } from '../tenants/tenant-context';
 
 const PHYSICAL_TRAINING_SURCHARGE_CENTS = 500;
 
@@ -16,7 +18,10 @@ type ChargeStudentRecord = Prisma.StudentGetPayload<{
 
 @Injectable()
 export class BillingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(TENANT_DB) private readonly prisma: TenantPrisma,
+    private readonly tenantContext: TenantContext,
+  ) {}
 
   async syncCurrentMonth(referenceDate = new Date()) {
     await this.refreshOverduePayments(referenceDate);
@@ -74,12 +79,13 @@ export class BillingService {
       .filter((student) =>
         this.shouldCreateCharge(student, studentsWithCurrentMonthPayment)
       )
-      .map((student) => this.buildChargePayload(student, referenceDate, monthStart))
+      .map((student) => this.buildChargePayload(student, referenceDate, monthStart, monthEnd))
       .filter((payment) => payment.amountCents > 0);
 
     if (paymentsToCreate.length) {
+      const tenantId = this.tenantContext.getTenantIdOrThrow();
       await this.prisma.payment.createMany({
-        data: paymentsToCreate
+        data: paymentsToCreate.map((payment) => ({ ...payment, tenantId }))
       });
     }
 
@@ -168,13 +174,27 @@ export class BillingService {
   private buildChargePayload(
     student: ChargeStudentRecord,
     referenceDate: Date,
-    competencyMonth: Date
+    competencyMonth: Date,
+    monthEnd: Date
   ) {
     const plan = student.currentPlan!;
-    const amountCents = this.calculateMonthlyCharge(
-      plan.monthlyFeeCents,
-      student.doesPhysicalTraining
-    );
+    const isFirstMonthForStudent =
+      student.firstMonthBillingPolicy != null &&
+      this.isSameMonth(student.enrollmentStartDate!, competencyMonth);
+    const useProRata =
+      isFirstMonthForStudent &&
+      student.firstMonthBillingPolicy === FirstMonthBillingPolicy.PRORATA;
+    const amountCents = useProRata
+      ? this.calculateProratedMonthlyCharge(
+          plan.monthlyFeeCents,
+          student.doesPhysicalTraining,
+          student.enrollmentStartDate!,
+          monthEnd
+        )
+      : this.calculateMonthlyCharge(
+          plan.monthlyFeeCents,
+          student.doesPhysicalTraining
+        );
     const dueDate = this.buildDueDate(
       competencyMonth,
       referenceDate,
@@ -208,6 +228,25 @@ export class BillingService {
     return doesPhysicalTraining
       ? baseAmountCents + PHYSICAL_TRAINING_SURCHARGE_CENTS
       : baseAmountCents;
+  }
+
+  calculateProratedMonthlyCharge(
+    monthlyFeeCents: number,
+    doesPhysicalTraining: boolean,
+    enrollmentStartDate: Date,
+    monthEnd: Date
+  ) {
+    const totalDaysInMonth = monthEnd.getDate();
+    const enrollmentDay = enrollmentStartDate.getDate();
+    const remainingDays = totalDaysInMonth - enrollmentDay + 1;
+    const ratio = Math.min(1, Math.max(0, remainingDays / totalDaysInMonth));
+
+    const baseCents = Math.round(monthlyFeeCents * ratio);
+    const surchargeCents = doesPhysicalTraining
+      ? Math.round(PHYSICAL_TRAINING_SURCHARGE_CENTS * ratio)
+      : 0;
+
+    return Math.max(0, baseCents + surchargeCents);
   }
 
   private buildDueDate(

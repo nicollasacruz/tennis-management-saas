@@ -6,7 +6,7 @@
 npm --workspace apps/api run test
 ```
 
-Resultado: sucesso.
+Resultado: sucesso. Inclui teste do cliente `EvolutionApiService` para criação/conexão de instância e QR code.
 
 ```bash
 npm --workspace apps/api run typecheck
@@ -50,6 +50,61 @@ docker compose run --rm api npm run user:create-admin -- --name "Admin Teste" --
 
 Resultado: sucesso. O script criou um admin local no tenant `esaf`.
 
+```bash
+curl -I --max-time 20 https://tenis.esaf.run.place/
+```
+
+Resultado: sucesso em producao sem ignorar TLS.
+
+```txt
+HTTP/2 200
+server: nginx/1.29.3
+strict-transport-security: max-age=31536000
+```
+
+```bash
+curl -i --max-time 20 https://tenis.esaf.run.place/api/health
+```
+
+Resultado: sucesso em producao sem ignorar TLS.
+
+```json
+{"service":"esaf-api","status":"ok","timestamp":"2026-05-31T10:09:08.001Z"}
+```
+
+```bash
+docker compose config --services
+```
+
+Resultado observado apos colocar Evolution em profile:
+
+```txt
+postgres
+api
+pgadmin
+web
+```
+
+Os servicos `evolution-api` e `evolution-postgres` nao aparecem no deploy padrao; so sobem quando o profile `evolution` for ativado.
+
+```bash
+docker compose --profile evolution exec -T evolution-api wget -qO- --header apikey:dev-evolution-global-key http://127.0.0.1:8080/
+```
+
+Resultado: sucesso local. A Evolution API v2.1.1 respondeu `status=200`.
+
+## Verificacao GitHub Actions
+
+- Run `26708905100`: sucesso. Validou CI e deploy da fase inicial multitenant.
+- Run `26709074691`: sucesso. Validou `profiles` para Evolution e dominio `tenisevolution.esaf.run.place`.
+- Run `26709696276`: sucesso. Validou o ajuste de TLS para emitir certificado apenas para `tenis.esaf.run.place`.
+
+Commit em producao apos a ultima verificacao:
+
+```txt
+6032734
+```
+
 ## Evidencias de base de dados
 
 ```sql
@@ -67,8 +122,10 @@ esaf | esaf.tenis.esaf.run.place  | ACTIVE
 
 - `npm --workspace apps/api run prisma:deploy` executado a partir do host falhou de forma intermitente contra `postgres.tenis-management-saas.orb.local`. A conectividade TCP chegou a responder, mas o Prisma devolveu `P1001` em nova tentativa.
 - A validacao final da migracao foi feita pelo caminho Docker (`api -> postgres`), que e o caminho usado em producao.
+- O primeiro teste TLS de `https://tenis.esaf.run.place` devolveu certificado de `esaf.run.place`. A causa foi `WEB_LETSENCRYPT_HOSTS` conter tambem `app.tenis.esaf.run.place`, `demo.tenis.esaf.run.place` e `esaf.tenis.esaf.run.place`, que ainda nao tinham DNS ativo. O companion falhou a emissao multi-domain e o nginx manteve o certificado antigo.
 
 ## Riscos residuais
 
 - A fase 1 ainda nao isola todos os dados de negocio por tenant; apenas estabelece tenant no login, JWT e utilizadores internos.
 - Endpoints de planos, alunos, pagamentos, recibos, presencas, atividades e comunicacoes continuam a precisar de filtros por `tenantId`.
+- Os subdominios preparados em `WEB_VIRTUAL_HOSTS` ainda precisam de DNS e TLS antes de serem usados por clientes.

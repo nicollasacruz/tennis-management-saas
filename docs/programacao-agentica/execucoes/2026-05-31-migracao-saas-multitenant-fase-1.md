@@ -20,12 +20,16 @@
 - Atualizado `.env.example` com `SAAS_ROOT_DOMAIN`, `DEFAULT_TENANT_SLUG`, `WEB_VIRTUAL_HOSTS`, `WEB_LETSENCRYPT_HOSTS` e `LETSENCRYPT_EMAIL`.
 - Adicionado teste de normalizacao e extracao de tenant a partir do host.
 - Mantida a correcao de `.dockerignore` para excluir artefactos `.next` e `*.tsbuildinfo` do contexto Docker.
+- Adicionados `profiles: ["evolution"]` aos servicos `evolution-api` e `evolution-postgres`, mantendo o Evolution fora do deploy padrao.
+- Atualizado o host configurado do Evolution para `tenisevolution.esaf.run.place`.
+- Limitado `WEB_LETSENCRYPT_HOSTS` a `tenis.esaf.run.place`, porque os subdominios `app`, `demo` e `esaf` ainda nao tinham DNS ativo e bloqueavam a emissao do certificado.
 
 ## Desvios ao plano
 
 - A validacao de `prisma migrate deploy` a partir do host falhou de forma intermitente contra `postgres.tenis-management-saas.orb.local`.
 - A migracao foi validada com sucesso dentro da rede Docker atraves de `docker compose run --rm api npm run prisma:deploy`, que replica melhor o caminho de producao.
 - O seed executado dentro do container nao criou utilizadores de demonstracao porque o container corre com `NODE_ENV=production`. O script `create-admin` foi validado criando um admin local de teste no tenant `esaf`.
+- O primeiro deploy com subdominios em `WEB_LETSENCRYPT_HOSTS` falhou a emissao TLS para o conjunto completo, porque `app.tenis.esaf.run.place` ainda devolvia `NXDOMAIN`. A correcao foi manter esses hosts apenas em `WEB_VIRTUAL_HOSTS` e emitir certificado inicialmente apenas para `tenis.esaf.run.place`.
 
 ## Pendencias
 
@@ -33,3 +37,4 @@
 - Criar fluxo de pedido de demonstracao.
 - Preparar provisionamento automatico de tenant trial.
 - Integrar Stripe para subscricoes SaaS, separado dos pagamentos dos alunos.
+- Criar DNS para `app.tenis.esaf.run.place`, `demo.tenis.esaf.run.place` e `esaf.tenis.esaf.run.place` antes de os adicionar a `WEB_LETSENCRYPT_HOSTS`.

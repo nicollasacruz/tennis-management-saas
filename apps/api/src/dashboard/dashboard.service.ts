@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AttendanceType, PaymentMethod, PaymentStatus } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { TENANT_DB, TenantPrisma } from '../prisma/tenant-scope';
 
 type AgingBucket = '0-30' | '31-60' | '61-90' | '90+';
 
 @Injectable()
 export class DashboardService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(TENANT_DB) private readonly prisma: TenantPrisma) {}
 
   async getSummary() {
     const now = new Date();

@@ -142,7 +142,7 @@ WEB_VIRTUAL_HOSTS=app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.
 WEB_LETSENCRYPT_HOSTS=app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place
 LETSENCRYPT_EMAIL=nicollasacruz@gmail.com
 PUBLIC_API_BASE_URL=https://esaf.tenis.esaf.run.place/api
-EVOLUTION_GO_VIRTUAL_HOST=evolution.tenis.esaf.run.place
+EVOLUTION_API_VIRTUAL_HOST=tenisevolution.esaf.run.place
 ```
 
 - [ ] **Step 5: Verificar sem imprimir segredos**
@@ -150,7 +150,7 @@ EVOLUTION_GO_VIRTUAL_HOST=evolution.tenis.esaf.run.place
 Executar:
 
 ```bash
-ssh root@62.169.28.198 "cd /root/projects/tennis-management-saas && grep -E '^(WEB_PORT|SAAS_ROOT_DOMAIN|WEB_VIRTUAL_HOSTS|WEB_LETSENCRYPT_HOSTS|LETSENCRYPT_EMAIL|PUBLIC_API_BASE_URL|EVOLUTION_GO_VIRTUAL_HOST)=' .env"
+ssh root@62.169.28.198 "cd /root/projects/tennis-management-saas && grep -E '^(WEB_PORT|SAAS_ROOT_DOMAIN|WEB_VIRTUAL_HOSTS|WEB_LETSENCRYPT_HOSTS|LETSENCRYPT_EMAIL|PUBLIC_API_BASE_URL|EVOLUTION_API_VIRTUAL_HOST|EVOLUTION_GO_VIRTUAL_HOST)=' .env"
 ```
 
 Esperado: apenas variaveis nao sensiveis.

@@ -423,17 +423,6 @@ function renderParagraphCard(
   context.y -= SECTION_GAP;
 }
 
-function renderConfirmationCard(context: ReceiptLayoutContext) {
-  const statement =
-    `Recebido de ${context.payload.billingName} no valor de ${formatCurrency(
-      context.payload.amountCents
-    )}, referente a ${formatMonth(
-      context.payload.competencyMonth
-    )}, com liquidação confirmada em ${formatDate(context.payload.paidAt)}.`;
-
-  renderParagraphCard(context, 'Resumo do recibo', statement, 'accent');
-}
-
 function renderSignatureBlock(context: ReceiptLayoutContext) {
   const blockHeight = 86;
   const titleHeight = 30;
@@ -789,24 +778,4 @@ function formatMonth(date: Date) {
     month: 'long',
     year: 'numeric'
   }).format(new Date(date));
-}
-
-function paymentMethodLabel(method: string | null) {
-  if (method === 'CARD') {
-    return 'Cartão';
-  }
-
-  if (method === 'BANK_TRANSFER') {
-    return 'Transferência bancária';
-  }
-
-  if (method === 'MBWAY') {
-    return 'MB WAY';
-  }
-
-  if (method === 'CASH') {
-    return 'Dinheiro';
-  }
-
-  return 'Método por definir';
 }
