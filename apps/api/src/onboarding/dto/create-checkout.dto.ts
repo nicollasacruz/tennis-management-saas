@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -32,4 +33,11 @@ export class CreateCheckoutDto {
   @MinLength(8)
   @MaxLength(72)
   password!: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^[a-z]{2}$/, {
+    message: 'locale: use um código de idioma de duas letras',
+  })
+  locale?: string;
 }

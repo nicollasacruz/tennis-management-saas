@@ -30,4 +30,4 @@ export const localeToBcp47: Record<Locale, string> = {
 };
 
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tenis.esaf.run.place';
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://clubtenispro.com';

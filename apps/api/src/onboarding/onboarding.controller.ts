@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  HttpCode,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { CreateCheckoutDto } from './dto/create-checkout.dto';
 import { OnboardingService } from './onboarding.service';
 
@@ -17,6 +26,20 @@ export class OnboardingController {
   @Post('checkout')
   checkout(@Body() dto: CreateCheckoutDto) {
     return this.onboarding.createCheckout(dto);
+  }
+
+  @Get('result')
+  result(@Query('session') sessionId: string) {
+    return this.onboarding.getCheckoutResult(sessionId ?? '');
+  }
+
+  @Post('stripe/webhook')
+  @HttpCode(200)
+  stripeWebhook(
+    @Req() req: { rawBody?: Buffer },
+    @Headers('stripe-signature') signature: string,
+  ) {
+    return this.onboarding.handleStripeWebhook(req.rawBody, signature);
   }
 
   // Conclusão simulada do pagamento (substitui o webhook Stripe no modo mock).

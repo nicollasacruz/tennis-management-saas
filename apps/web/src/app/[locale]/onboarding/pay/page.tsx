@@ -1,15 +1,18 @@
 'use client';
 
+import { CheckCircle2, CreditCard } from 'lucide-react';
+import { useParams, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { API_BASE } from '@/lib/utils';
+import { OnboardingHeader } from '@/components/onboarding-header';
+import { API_BASE, formatCurrency } from '@/lib/utils';
 
-// Página de pagamento SIMULADA (substitui o Stripe Checkout enquanto não há
-// conta Stripe). Quando o Stripe real estiver configurado, o checkout do
-// backend devolve a URL do Stripe e esta página não é usada.
+const MONTHLY_PRICE_CENTS = 3990;
+
 function MockCheckout() {
-  const params = useSearchParams();
-  const session = params.get('session') ?? '';
+  const params = useParams<{ locale: string }>();
+  const searchParams = useSearchParams();
+  const locale = params.locale ?? 'pt';
+  const session = searchParams.get('session') ?? '';
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,12 +27,9 @@ function MockCheckout() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message ?? 'Falha no pagamento');
-      const qs = new URLSearchParams({
-        slug: data.slug,
-        host: data.host,
-        appUrl: data.appUrl,
-      });
-      window.location.href = `/onboarding/sucesso?${qs.toString()}`;
+      window.location.href = `/${locale}/onboarding/sucesso?session=${encodeURIComponent(
+        session,
+      )}`;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro inesperado');
       setPaying(false);
@@ -37,31 +37,60 @@ function MockCheckout() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-6 py-12">
-      <div className="rounded-xl border border-gray-200 p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <span className="text-lg font-semibold">Assinatura mensal</span>
-          <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-            test mode
-          </span>
-        </div>
-        <p className="text-sm text-gray-500">
-          Pagamento simulado (sem Stripe real). Cartão de teste:{' '}
-          <code className="rounded bg-gray-100 px-1">4242 4242 4242 4242</code>
-        </p>
-        <p className="mt-1 break-all text-xs text-gray-400">sessão: {session}</p>
+    <div className="min-h-screen text-[var(--ink)]">
+      <OnboardingHeader />
+      <main className="px-6 py-10 md:py-14">
+        <section className="mx-auto w-full max-w-lg rounded-3xl border border-[var(--border)] bg-[var(--cream)] p-6 shadow-[0_24px_60px_-30px_rgba(15,31,21,0.35)] sm:p-8">
+          <div className="mb-5 flex items-start justify-between gap-4">
+            <div>
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
+                Modo de teste local
+              </p>
+              <h1 className="mt-1 text-2xl font-extrabold">Pagamento mensal</h1>
+            </div>
+            <CreditCard className="text-[var(--accent-strong)]" size={28} />
+          </div>
 
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+          <div className="rounded-2xl border border-[var(--border-soft)] bg-[var(--paper)] p-4">
+            <div className="flex items-end gap-2">
+              <span className="text-3xl font-extrabold tracking-tight">
+                {formatCurrency(MONTHLY_PRICE_CENTS)}
+              </span>
+              <span className="pb-1 text-sm font-semibold text-[var(--muted)]">
+                / mês
+              </span>
+            </div>
+            <p className="mt-2 text-sm leading-[1.7] text-[var(--muted)]">
+              Esta página só aparece quando a Stripe real não está configurada.
+              Em produção, o cliente é enviado para Stripe Checkout.
+            </p>
+          </div>
 
-        <button
-          onClick={pay}
-          disabled={!session || paying}
-          className="mt-6 w-full rounded-md bg-emerald-600 px-4 py-2.5 font-medium text-white disabled:opacity-50"
-        >
-          {paying ? 'A processar…' : 'Pagar e criar escola'}
-        </button>
-      </div>
-    </main>
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--accent-soft)] px-3 py-2 text-sm font-medium text-[var(--accent-strong)]">
+            <CheckCircle2 size={17} />
+            Cartão de teste: 4242 4242 4242 4242
+          </div>
+
+          <p className="mt-3 break-all text-xs text-[var(--muted)]">
+            Sessão: {session}
+          </p>
+
+          {error && (
+            <p className="mt-3 rounded-xl border border-[rgba(160,74,55,0.2)] bg-[#fcebe7] px-3 py-2 text-sm font-semibold text-[#914a39]">
+              {error}
+            </p>
+          )}
+
+          <button
+            onClick={pay}
+            disabled={!session || paying}
+            className="mt-6 flex h-12 w-full items-center justify-center rounded-xl bg-[var(--ink)] px-4 text-sm font-bold text-white transition-colors hover:bg-[var(--ink-soft)] disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            {paying ? 'A processar pagamento...' : 'Pagar e criar escola'}
+          </button>
+        </section>
+      </main>
+    </div>
   );
 }
 

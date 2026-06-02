@@ -18,11 +18,10 @@ export class MockBillingProvider implements BillingProvider {
     input: CreateCheckoutInput,
   ): Promise<CheckoutSession> {
     const sessionId = `mock_cs_${randomBytes(12).toString('hex')}`;
-    const base = (
-      process.env.ONBOARDING_PUBLIC_BASE_URL ??
-      `https://${process.env.SAAS_ROOT_DOMAIN ?? 'localhost'}`
-    ).replace(/\/$/, '');
-    const url = `${base}/onboarding/pay?session=${sessionId}`;
+    const url = input.payUrl.replace(
+      '{CHECKOUT_SESSION_ID}',
+      encodeURIComponent(sessionId),
+    );
     this.logger.log(
       `(mock) checkout criado slug=${input.slug} session=${sessionId}`,
     );
