@@ -91,8 +91,36 @@ model Tenant {
   emailJobs             EmailJob[]
   whatsappJobs          WhatsappJob[]
   whatsappConfig        TenantWhatsappConfig?
+  stripeCustomerId      String?                @unique
+  stripeSubscriptionId  String?                @unique
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
+}
+
+enum OnboardingStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// Dados de uma tentativa de criação de escola (self-service no apex), entre o
+// início do checkout e a confirmação de pagamento (webhook Stripe / mock).
+model OnboardingSession {
+  id                String           @id @default(cuid())
+  schoolName        String
+  slug              String
+  adminName         String
+  adminEmail        String
+  passwordHash      String
+  status            OnboardingStatus @default(PENDING)
+  provider          String           @default("mock")
+  providerSessionId String?          @unique
+  stripeCustomerId  String?
+  createdTenantId   String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([slug])
 }
 
 model TenantWhatsappConfig {

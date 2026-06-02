@@ -10,3 +10,4 @@ dist
 coverage
 apps/api/dist
 apps/web/dist
+.superpowers/
