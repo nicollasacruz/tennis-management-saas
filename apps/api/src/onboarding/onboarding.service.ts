@@ -295,6 +295,8 @@ export class OnboardingService {
   ): Promise<void> {
     try {
       const { appUrl } = this.result(tenant);
+      // O '/' do subdomínio é a landing pública; o acesso é no /login do tenant.
+      const loginUrl = `${appUrl}/pt/login`;
 
       const attachments = [] as {
         filename: string;
@@ -313,7 +315,7 @@ export class OnboardingService {
         ``,
         `A conta da escola "${tenant.name}" foi criada e a assinatura mensal está ativa.`,
         ``,
-        `Aceda em: ${appUrl}`,
+        `Aceda em: ${loginUrl}`,
         `Email de acesso: ${admin.adminEmail}`,
         `(Use a palavra-passe definida durante o registo.)`,
         ``,
@@ -323,22 +325,47 @@ export class OnboardingService {
         ``,
         `Tênis Clube Pro`,
       ].join('\n');
-      const html = `
-        <p>Olá ${admin.adminName},</p>
-        <p>A conta da escola <strong>${tenant.name}</strong> foi criada e a assinatura mensal está ativa.</p>
-        <p>
-          <a href="${appUrl}" style="display:inline-block;padding:12px 20px;background:#0f1f15;color:#fff;border-radius:10px;font-weight:bold;text-decoration:none">Entrar na sua escola</a>
-        </p>
-        <p>Endereço: <a href="${appUrl}">${appUrl}</a><br/>
-        Email de acesso: <strong>${admin.adminEmail}</strong><br/>
-        <span style="color:#566857">Use a palavra-passe definida durante o registo.</span></p>
-        <p>${
-          attachments.length
-            ? 'Em anexo segue a fatura do primeiro pagamento.'
-            : 'A fatura do pagamento fica disponível na sua conta Stripe.'
-        }</p>
-        <p style="color:#566857">Tênis Clube Pro</p>
-      `;
+      const invoiceLine = attachments.length
+        ? 'Em anexo segue a fatura do primeiro pagamento (PDF).'
+        : 'A fatura do pagamento fica disponível na sua conta Stripe.';
+      const html = `<!doctype html>
+<html lang="pt"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${subject}</title></head>
+<body style="margin:0;padding:0;background:#f4f7ed;font-family:'Manrope',Arial,Helvetica,sans-serif;color:#0f1f15;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7ed;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;">
+        <tr><td style="padding:4px 4px 18px;">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td style="background:#a8e220;border-radius:10px;width:38px;height:38px;text-align:center;vertical-align:middle;font-weight:800;font-size:15px;color:#0f1f15;">TC</td>
+            <td style="padding-left:10px;font-size:16px;font-weight:800;letter-spacing:-0.2px;color:#0f1f15;">Tênis Clube Pro</td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="background:#ffffff;border:1px solid #dde6c7;border-radius:16px;padding:32px;">
+          <p style="margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#3f6607;">Conta criada</p>
+          <h1 style="margin:0 0 16px;font-size:24px;line-height:1.25;font-weight:800;color:#0f1f15;">A sua escola ${tenant.name} está pronta.</h1>
+          <p style="margin:0 0 8px;font-size:15px;line-height:1.6;color:#566857;">Olá ${admin.adminName}, a conta foi criada e a assinatura mensal está ativa. Entre com o email e a palavra-passe definidos no registo.</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0;"><tr>
+            <td style="background:#0f1f15;border-radius:12px;">
+              <a href="${loginUrl}" style="display:inline-block;padding:14px 26px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">Entrar na sua escola →</a>
+            </td>
+          </tr></table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f9f0;border:1px solid #e7eed3;border-radius:12px;">
+            <tr><td style="padding:16px 18px;font-size:14px;line-height:1.7;color:#0f1f15;">
+              <span style="color:#566857;">Endereço</span><br/><a href="${loginUrl}" style="color:#3f6607;font-weight:600;text-decoration:none;">${loginUrl}</a><br/><br/>
+              <span style="color:#566857;">Email de acesso</span><br/><strong>${admin.adminEmail}</strong>
+            </td></tr>
+          </table>
+          <p style="margin:18px 0 0;font-size:13px;line-height:1.6;color:#566857;">${invoiceLine}</p>
+        </td></tr>
+        <tr><td style="padding:18px 8px;text-align:center;font-size:12px;line-height:1.6;color:#8a9684;">
+          Tênis Clube Pro · email automático, não responda diretamente.
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
 
       await this.mail.send({
         to: admin.adminEmail,

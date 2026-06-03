@@ -2,7 +2,7 @@
 
 import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { OnboardingHeader } from '@/components/onboarding-header';
 import { API_BASE } from '@/lib/utils';
 
@@ -16,6 +16,8 @@ type CheckoutResult = {
 
 function Success() {
   const params = useSearchParams();
+  const routeParams = useParams<{ locale: string }>();
+  const locale = routeParams.locale ?? 'pt';
   const session = params.get('session') ?? '';
   const hostFromQuery = params.get('host') ?? '';
   const appUrlFromQuery =
@@ -74,6 +76,8 @@ function Success() {
 
   const isReady = result?.status === 'COMPLETED' && result.appUrl;
   const host = result?.host ?? hostFromQuery;
+  // O '/' do subdomínio mostra a landing pública; o app fica no /login do tenant.
+  const loginUrl = result?.appUrl ? `${result.appUrl}/${locale}/login` : '';
 
   return (
     <div className="min-h-screen text-[var(--ink)]">
@@ -105,7 +109,7 @@ function Success() {
 
           {isReady ? (
             <a
-              href={result.appUrl}
+              href={loginUrl}
               className="group mt-7 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--ink)] px-5 text-sm font-bold text-white transition-colors hover:bg-[var(--ink-soft)]"
             >
               Entrar em {host}
