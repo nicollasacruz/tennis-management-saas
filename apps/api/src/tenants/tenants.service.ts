@@ -1,6 +1,16 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { TenantStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  BillingProvider,
+  BILLING_PROVIDER,
+  supportsSubscriptions,
+} from '../onboarding/billing/billing-provider';
 import {
   extractTenantSlugFromHost,
   normalizeTenantHost,
@@ -12,7 +22,10 @@ type HeadersLike = Record<string, string | string[] | undefined>;
 
 @Injectable()
 export class TenantsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(BILLING_PROVIDER) private readonly billing: BillingProvider,
+  ) {}
 
   async getSettings(tenantId: string) {
     const tenant = await this.prisma.tenant.findUniqueOrThrow({
@@ -54,6 +67,71 @@ export class TenantsService {
     });
 
     return this.getSettings(tenantId);
+  }
+
+  // Visão geral da assinatura do tenant (aba "Conta"). Estado vem do Stripe;
+  // `configured: false` quando não há assinatura ou o Stripe está em modo mock.
+  async getSubscription(tenantId: string) {
+    const tenant = await this.prisma.tenant.findUniqueOrThrow({
+      where: { id: tenantId },
+      select: { stripeSubscriptionId: true },
+    });
+
+    if (!tenant.stripeSubscriptionId || !supportsSubscriptions(this.billing)) {
+      return { configured: false, subscription: null };
+    }
+
+    const subscription = await this.billing.getSubscription(
+      tenant.stripeSubscriptionId,
+    );
+
+    return { configured: !!subscription, subscription };
+  }
+
+  // Abre o Stripe Customer Portal para o tenant gerir a faturação. Restrito a
+  // ADMIN no controlador.
+  async createBillingPortal(tenantId: string, returnUrl?: string) {
+    if (!supportsSubscriptions(this.billing)) {
+      throw new BadRequestException('Gestão de faturação indisponível.');
+    }
+
+    const tenant = await this.prisma.tenant.findUniqueOrThrow({
+      where: { id: tenantId },
+      select: { stripeCustomerId: true, primaryHost: true },
+    });
+
+    if (!tenant.stripeCustomerId) {
+      throw new BadRequestException(
+        'Esta organização não tem cliente Stripe associado.',
+      );
+    }
+
+    const url = await this.billing.createBillingPortalSession(
+      tenant.stripeCustomerId,
+      this.resolveReturnUrl(returnUrl, tenant.primaryHost),
+    );
+
+    return { url };
+  }
+
+  private resolveReturnUrl(
+    returnUrl: string | undefined,
+    primaryHost: string,
+  ): string {
+    const fallback = `https://${primaryHost}`;
+
+    if (!returnUrl) {
+      return fallback;
+    }
+
+    try {
+      const parsed = new URL(returnUrl);
+      return ['http:', 'https:'].includes(parsed.protocol)
+        ? returnUrl
+        : fallback;
+    } catch {
+      return fallback;
+    }
   }
 
   async resolveFromHeaders(headers: HeadersLike) {

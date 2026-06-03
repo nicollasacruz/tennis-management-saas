@@ -4,6 +4,8 @@ import {
   CompletedPayment,
   CreateCheckoutInput,
   InvoiceDocument,
+  SubscriptionBillingProvider,
+  SubscriptionInfo,
   WebhookBillingProvider,
 } from './billing-provider';
 
@@ -15,7 +17,9 @@ import {
 //   STRIPE_PRICE_ID=price_...            (preço recorrente mensal)
 //   STRIPE_WEBHOOK_SECRET=whsec_...
 @Injectable()
-export class StripeBillingProvider implements WebhookBillingProvider {
+export class StripeBillingProvider
+  implements WebhookBillingProvider, SubscriptionBillingProvider
+{
   readonly name = 'stripe';
   private readonly logger = new Logger(StripeBillingProvider.name);
   private readonly stripe: any;
@@ -115,5 +119,48 @@ export class StripeBillingProvider implements WebhookBillingProvider {
       );
       return null;
     }
+  }
+
+  // Estado da assinatura (para o painel gerencial e a aba Conta). Best-effort:
+  // devolve null se a assinatura não existir ou o Stripe falhar.
+  async getSubscription(subscriptionId: string): Promise<SubscriptionInfo | null> {
+    try {
+      const sub = await this.stripe.subscriptions.retrieve(subscriptionId, {
+        expand: ['items.data.price.product'],
+      });
+      const price = sub?.items?.data?.[0]?.price;
+      const product = price?.product;
+      return {
+        status: sub?.status ?? 'unknown',
+        currentPeriodEnd: sub?.current_period_end
+          ? new Date(sub.current_period_end * 1000).toISOString()
+          : null,
+        amount: typeof price?.unit_amount === 'number' ? price.unit_amount : null,
+        currency: price?.currency ?? null,
+        interval: price?.recurring?.interval ?? null,
+        productName:
+          product && typeof product === 'object' && 'name' in product
+            ? (product.name as string)
+            : null,
+      };
+    } catch (err) {
+      this.logger.warn(
+        `Não foi possível obter a assinatura ${subscriptionId}: ${
+          err instanceof Error ? err.message : 'erro'
+        }`,
+      );
+      return null;
+    }
+  }
+
+  async createBillingPortalSession(
+    customerId: string,
+    returnUrl: string,
+  ): Promise<string> {
+    const session = await this.stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
+    });
+    return session.url;
   }
 }

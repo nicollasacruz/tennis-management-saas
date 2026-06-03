@@ -36,6 +36,39 @@ export interface InvoiceDocument {
   contentType: string;
 }
 
+// Estado da assinatura, normalizado a partir do Stripe. Usado no painel
+// gerencial (visão por escola) e na aba "Conta" de cada tenant.
+export interface SubscriptionInfo {
+  status: string; // active | past_due | canceled | trialing | ...
+  currentPeriodEnd: string | null; // ISO
+  amount: number | null; // cents (preço recorrente)
+  currency: string | null;
+  interval: string | null; // 'month'
+  productName: string | null;
+}
+
+// Capacidades extra disponíveis apenas no provedor real (Stripe). O mock não
+// implementa — quem consome verifica com `supportsSubscriptions()`.
+export interface SubscriptionBillingProvider {
+  getSubscription(subscriptionId: string): Promise<SubscriptionInfo | null>;
+  // Devolve a URL do Stripe Customer Portal para o cliente gerir a faturação.
+  createBillingPortalSession(
+    customerId: string,
+    returnUrl: string,
+  ): Promise<string>;
+}
+
+export function supportsSubscriptions(
+  provider: BillingProvider,
+): provider is BillingProvider & SubscriptionBillingProvider {
+  return (
+    typeof (provider as Partial<SubscriptionBillingProvider>).getSubscription ===
+      'function' &&
+    typeof (provider as Partial<SubscriptionBillingProvider>)
+      .createBillingPortalSession === 'function'
+  );
+}
+
 export interface BillingProvider {
   readonly name: string;
   createCheckoutSession(input: CreateCheckoutInput): Promise<CheckoutSession>;

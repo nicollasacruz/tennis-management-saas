@@ -229,16 +229,66 @@ export type User = {
   role: string;
 };
 
+export type TenantStatus = 'ACTIVE' | 'TRIALING' | 'SUSPENDED' | 'ARCHIVED';
+
 export type TenantSettings = {
   id: string;
   name: string;
   slug: string;
   primaryHost: string;
-  status: 'ACTIVE' | 'TRIALING' | 'SUSPENDED' | 'ARCHIVED';
+  status: TenantStatus;
   logoUrl: string | null;
   receiptIssuer: string | null;
   receiptSignatureLabel: string | null;
   updatedAt: string;
+};
+
+export type SubscriptionInfo = {
+  status: string;
+  currentPeriodEnd: string | null;
+  amount: number | null;
+  currency: string | null;
+  interval: string | null;
+  productName: string | null;
+};
+
+export type TenantSubscription = {
+  configured: boolean;
+  subscription: SubscriptionInfo | null;
+};
+
+// Painel gerencial (dono do SaaS)
+export type PlatformOwner = {
+  id: string;
+  email: string;
+  fullName: string;
+};
+
+export type PlatformTenant = {
+  id: string;
+  name: string;
+  slug: string;
+  primaryHost: string;
+  status: TenantStatus;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PlatformTenantDetail = PlatformTenant & {
+  counts: { students: number; systemUsers: number };
+  subscription: SubscriptionInfo | null;
+};
+
+export type PlatformMetrics = {
+  total: number;
+  active: number;
+  trialing: number;
+  suspended: number;
+  archived: number;
+  newThisMonth: number;
+  mrr: { amount: number; currency: string } | null;
 };
 
 export type WhatsappConnectionStatus = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED';

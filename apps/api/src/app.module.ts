@@ -12,6 +12,7 @@ import { MailModule } from './mail/mail.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PlansModule } from './plans/plans.module';
+import { PlatformModule } from './platform/platform.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StudentsModule } from './students/students.module';
 import { SystemUsersModule } from './system-users/system-users.module';
@@ -39,7 +40,8 @@ import { PrismaExceptionFilter } from './filters/prisma-exception.filter';
     StudentsModule,
     PaymentsModule,
     OnboardingModule,
-    SystemUsersModule
+    SystemUsersModule,
+    PlatformModule
   ],
   controllers: [AppController],
   providers: [

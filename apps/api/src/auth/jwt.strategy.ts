@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { TenantStatus } from '@prisma/client';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { TenantContext } from '../tenants/tenant-context';
@@ -48,6 +49,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         fullName: true,
         role: true,
         isActive: true,
+        tenant: { select: { status: true } },
       },
     });
 
@@ -55,6 +57,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Utilizador não encontrado ou inativo');
     }
 
-    return user;
+    // Tenant suspenso/arquivado (ex.: bloqueado no painel gerencial): invalida a
+    // sessão mesmo com token válido. 401 → o frontend faz logout limpo, em vez
+    // de o pedido seguir sem contexto de tenant e rebentar com 500.
+    const status = user.tenant?.status;
+    if (status !== TenantStatus.ACTIVE && status !== TenantStatus.TRIALING) {
+      throw new UnauthorizedException('Organização inativa ou indisponível.');
+    }
+
+    const { tenant: _tenant, ...sessionUser } = user;
+    return sessionUser;
   }
 }
