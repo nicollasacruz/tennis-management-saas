@@ -2,6 +2,7 @@ import { API_BASE } from './utils';
 import type {
   CommunicationJob,
   TenantSettings,
+  TenantSubscription,
   WhatsappConfig,
   WhatsappConnectResult,
 } from '@/types';
@@ -156,6 +157,19 @@ export async function updateTenantSettings(input: {
   return apiRequest('/tenants/current/settings', {
     method: 'PUT',
     body: JSON.stringify(input),
+  });
+}
+
+export async function getTenantSubscription(): Promise<TenantSubscription> {
+  return apiRequest('/tenants/current/subscription');
+}
+
+export async function openBillingPortal(
+  returnUrl?: string,
+): Promise<{ url: string }> {
+  return apiRequest('/tenants/current/billing-portal', {
+    method: 'POST',
+    body: JSON.stringify(returnUrl ? { returnUrl } : {}),
   });
 }
 

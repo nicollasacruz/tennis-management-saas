@@ -5,7 +5,7 @@ const RESERVED: ReadonlySet<string> = new Set([
   'billing', 'onboarding', 'checkout', 'login', 'signup', 'register', 'account',
   'pay', 'stripe', 'demo', 'test', 'staging', 'dev', 'ns', 'ns1', 'ns2', 'mx',
   'ftp', 'vpn', 'db', 'pgadmin', 'evolution', 'traefik', 'grafana', 'metrics',
-  'internal', 'public', 'clubtenispro',
+  'internal', 'public', 'clubtenispro', 'gerencial',
 ]);
 
 export function isReservedSlug(slug: string): boolean {

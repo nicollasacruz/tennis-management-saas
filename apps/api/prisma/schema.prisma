@@ -97,6 +97,19 @@ model Tenant {
   updatedAt             DateTime               @updatedAt
 }
 
+// Dono da plataforma (SaaS). NÃO pertence a nenhum tenant: vive no apex e gere
+// todas as escolas no painel /gerencial. Auth totalmente separada do SystemUser
+// (que é preso a um tenant), para não tocar no isolamento multitenant.
+model PlatformUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  fullName  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum OnboardingStatus {
   PENDING
   COMPLETED

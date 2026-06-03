@@ -21,6 +21,7 @@ import {
   Trophy,
   UserCog,
   Users,
+  Wallet,
   X,
 } from 'lucide-react';
 
@@ -42,6 +43,7 @@ const navGroups = [
       { href: '/comunicacoes', label: 'Comunicações', icon: MessageCircle },
       { href: '/whatsapp', label: 'WhatsApp', icon: Smartphone },
       { href: '/equipa', label: 'Equipa', icon: UserCog },
+      { href: '/conta', label: 'Conta', icon: Wallet },
       { href: '/definicoes', label: 'Definições', icon: Settings },
     ],
   },

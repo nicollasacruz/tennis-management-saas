@@ -20,5 +20,7 @@ import { OnboardingService } from './onboarding.service';
           : new MockBillingProvider(),
     },
   ],
+  // Exportado para reuso (TenantsModule/PlatformModule) sem criar outro client Stripe.
+  exports: [BILLING_PROVIDER],
 })
 export class OnboardingModule {}
