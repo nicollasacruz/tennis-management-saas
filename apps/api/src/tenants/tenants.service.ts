@@ -196,7 +196,7 @@ export class TenantsService {
       return configured;
     }
 
-    return process.env.NODE_ENV === 'production' ? null : 'esaf';
+    return process.env.NODE_ENV === 'production' ? null : 'demo';
   }
 
   private ensureTenantAvailable<T extends { status: TenantStatus }>(tenant: T): T {

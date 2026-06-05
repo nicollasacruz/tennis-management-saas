@@ -28,24 +28,24 @@ docker compose run --rm api npm run prisma:seed
 
 docker compose up -d api
 # SUCESSO — boot sem erros (0 errors; warnings apenas de SMTP/pgadmin)
-# GET /api/health -> {"service":"esaf-api","status":"ok"}
+# GET /api/health -> {"service":"clubtenispro-api","status":"ok"}
 ```
 
 ## Isolamento end-to-end (via X-Forwarded-Host)
 
 Nota: o `fetch` do Node remove o header `Host` (header proibido pela spec). Em produção o
 nginx-proxy define `X-Forwarded-Host`; os testes usaram esse header. Criado um segundo
-tenant `demo` (`demo.tenis.esaf.run.place`) com admin próprio.
+tenant `demo` (`demo.tenis.clubtenispro.com`) com admin próprio.
 
 | Verificação | Resultado |
 |---|---|
-| Login esaf (host esaf) | 200, tenantId `tenant_esaf` |
+| Login demo (host demo) | 200, tenantId `tenant_demo` |
 | Login demo (host demo) | 200, tenantId do demo |
-| `GET /students` (esaf) | `[Inês Duarte, João Matos, Rita Nunes]` (3) |
-| `GET /students` (demo) | `[]` — não vê dados do esaf |
-| `GET /dashboard/summary` (esaf) | `activeStudents = 3` (agregação isolada) |
-| `GET /whatsapp/config` (esaf) | 200, `configured:false`, `instanceName:"esaf"` |
-| `GET /students` com token esaf no host demo | **401** (mismatch host↔token) |
+| `GET /students` (demo) | `[Inês Duarte, João Matos, Rita Nunes]` (3) |
+| `GET /students` (demo) | `[]` — não vê dados do demo |
+| `GET /dashboard/summary` (demo) | `activeStudents = 3` (agregação isolada) |
+| `GET /whatsapp/config` (demo) | 200, `configured:false`, `instanceName:"demo"` |
+| `GET /students` com token demo no host demo | **401** (mismatch host↔token) |
 
 ## Falhas conhecidas / notas
 - A porta do Postgres não é publicada no host; migração/seed corridos via Docker (caminho de produção).

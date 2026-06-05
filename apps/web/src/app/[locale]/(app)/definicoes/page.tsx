@@ -166,7 +166,7 @@ export default function DefinicoesPage() {
                       }
                       disabled={!isAdmin}
                       className={inputClass}
-                      placeholder="ex.: ESAF - Escola de Ténis"
+                      placeholder="ex.: Clube de Ténis Demo"
                       maxLength={160}
                     />
                   </label>
@@ -180,7 +180,7 @@ export default function DefinicoesPage() {
                       }
                       disabled={!isAdmin}
                       className={inputClass}
-                      placeholder="ex.: Direção ESAF"
+                      placeholder="ex.: Direção do clube"
                       maxLength={120}
                     />
                   </label>

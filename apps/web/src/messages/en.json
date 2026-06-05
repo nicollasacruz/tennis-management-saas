@@ -9,7 +9,8 @@
     "precos": "Pricing",
     "demo": "Demo",
     "entrar": "Sign in",
-    "pedirDemo": "Get a demo"
+    "pedirDemo": "Get a demo",
+    "criarConta": "Create account"
   },
   "hero": {
     "badge": "Tennis management SaaS",
@@ -17,9 +18,10 @@
     "titleHighlight": "end to end",
     "titlePost": ".",
     "subtitle": "Students, fees, receipts, attendance and automatic WhatsApp and email communication — in one multi-organisation platform, with every club's data isolated.",
-    "ctaPrimary": "Get a demo",
+    "ctaPrimary": "Create my school",
     "ctaSecondary": "See pricing",
-    "fineprint": "No card · Set up in minutes · Cancel anytime"
+    "ctaDemo": "Want to look first? Get a demo",
+    "fineprint": "Set up in minutes · No lock-in · Cancel anytime"
   },
   "dashboard": {
     "org": "Northern Club",
@@ -69,22 +71,15 @@
     "titulo": "Simple plans that grow with you",
     "texto": "Your students' fees are managed inside the platform — independent of your plan.",
     "popular": "Most popular",
+    "trust": "Secure payment via Stripe · No lock-in · Cancel anytime",
     "items": [
       {
-        "nome": "Trial",
-        "preco": "€0",
-        "periodo": "14 days",
-        "descricao": "Try everything, no card.",
-        "cta": "Start free",
-        "inclui": ["Up to 30 students", "1 organisation", "PDF receipts", "Attendance and dashboard", "Email support"]
-      },
-      {
         "nome": "Club",
-        "preco": "€49",
+        "preco": "€89,90",
         "periodo": "/ month",
         "descricao": "For schools and clubs in operation.",
-        "cta": "Get a demo",
-        "inclui": ["Unlimited students", "Automatic WhatsApp + email", "Automatic monthly billing", "Activities and tournaments", "Financial reports"]
+        "cta": "Start now",
+        "inclui": ["Up to 50 students", "Up to 3 courts", "Automatic WhatsApp + email", "Automatic monthly billing", "Activities and tournaments", "Financial reports"]
       },
       {
         "nome": "Network",

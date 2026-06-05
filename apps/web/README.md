@@ -1,6 +1,6 @@
-# ESAF Finance Desk — Frontend Web
+# ClubTenisPro — Frontend Web
 
-Frontend da aplicação ESAF Finance Desk, construído com [Next.js](https://nextjs.org) (App Router) + React 19 + Tailwind CSS v4.
+Frontend da aplicação ClubTenisPro, construído com [Next.js](https://nextjs.org) (App Router) + React 19 + Tailwind CSS v4.
 
 ## Desenvolvimento local
 

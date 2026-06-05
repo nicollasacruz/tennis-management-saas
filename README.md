@@ -1,6 +1,6 @@
-# ESAF Finance Desk
+# ClubTenisPro
 
-Sistema pequeno de gestão de pagamentos e emissão de recibos para a escola de ténis ESAF.
+Sistema pequeno de gestão de pagamentos e emissão de recibos para a clubes de ténis.
 
 ## Stack
 
@@ -64,15 +64,15 @@ docker compose exec api npm run prisma:seed
 Dentro do serviço `api` já em execução:
 
 ```bash
-docker compose exec api npm run user:create-admin -- --name "Admin ESAF" --email admin@esaf.pt --password "troque-esta-password"
+docker compose exec api npm run user:create-admin -- --name "Admin Demo" --email admin@demo.clubtenispro.com --password "troque-esta-password"
 ```
 
 Alternativa usando variáveis de ambiente para evitar gravar a password no histórico:
 
 ```bash
 docker compose exec \
-  -e ADMIN_NAME="Admin ESAF" \
-  -e ADMIN_EMAIL="admin@esaf.pt" \
+  -e ADMIN_NAME="Admin Demo" \
+  -e ADMIN_EMAIL="admin@demo.clubtenispro.com" \
   -e ADMIN_PASSWORD="troque-esta-password" \
   api \
   npm run user:create-admin

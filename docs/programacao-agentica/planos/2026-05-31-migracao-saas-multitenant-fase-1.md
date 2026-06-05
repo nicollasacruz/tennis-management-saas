@@ -18,7 +18,7 @@ Incluido nesta fase:
 - Associar `SystemUser` ao tenant para permitir login por tenant.
 - Resolver tenant por `Host`/`X-Forwarded-Host`.
 - Incluir `tenantId` no JWT e no utilizador autenticado.
-- Ajustar seed e script de criacao de admin para o tenant inicial `esaf`.
+- Ajustar seed e script de criacao de admin para o tenant inicial `demo`.
 - Manter compatibilidade com `jwilder/nginx-proxy` e subdominios conhecidos.
 
 Fora desta fase:
@@ -62,7 +62,7 @@ Fora desta fase:
 - [ ] Adicionar modelo `Tenant`.
 - [ ] Adicionar `tenantId` obrigatorio a `SystemUser`.
 - [ ] Trocar unicidade global de `SystemUser.email` por `@@unique([tenantId, email])`.
-- [ ] Gerar migracao Prisma para criar tenant `esaf` e associar utilizadores existentes.
+- [ ] Gerar migracao Prisma para criar tenant `demo` e associar utilizadores existentes.
 - [ ] Executar `npm run db:generate`.
 
 ### Task 3: Servico de tenants
@@ -81,7 +81,7 @@ Fora desta fase:
 
 ### Task 5: Seed e admin
 
-- [ ] Ajustar `seed.ts` para criar/upsert tenant `esaf`.
+- [ ] Ajustar `seed.ts` para criar/upsert tenant `demo`.
 - [ ] Ajustar utilizadores de demonstracao para `tenantId`.
 - [ ] Ajustar `create-admin.js` para criar/promover admin dentro do tenant configurado.
 
@@ -96,6 +96,6 @@ Fora desta fase:
 
 ## Riscos
 
-- A migracao Prisma precisa preservar utilizadores existentes criando o tenant `esaf` antes de tornar `tenantId` obrigatorio.
+- A migracao Prisma precisa preservar utilizadores existentes criando o tenant `demo` antes de tornar `tenantId` obrigatorio.
 - O isolamento total ainda nao fica completo nesta fase; endpoints autenticados passam a saber o tenant, mas queries de negocio ainda precisam de refatoracao posterior.
-- Hosts neutros como `app.tenis.esaf.run.place` podem exigir fluxo de escolha de tenant numa fase seguinte.
+- Hosts neutros como `app.tenis.clubtenispro.com` podem exigir fluxo de escolha de tenant numa fase seguinte.

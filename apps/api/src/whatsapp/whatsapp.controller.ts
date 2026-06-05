@@ -70,7 +70,7 @@ export class WhatsappController {
         type: 'document',
         url: dto.url ?? TEST_DOCUMENT_URL,
         filename: dto.filename ?? 'teste-whatsapp.pdf',
-        caption: dto.caption ?? 'Teste de envio WhatsApp ESAF',
+        caption: dto.caption ?? 'Teste de envio WhatsApp',
       },
       {
         referenceType: 'whatsapp:test',

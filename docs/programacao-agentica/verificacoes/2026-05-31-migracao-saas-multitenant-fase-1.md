@@ -45,13 +45,13 @@ docker compose run --rm api npm run prisma:seed
 Resultado: sucesso. O seed executou sem erros; em container de producao nao cria utilizadores de demonstracao por causa de `NODE_ENV=production`.
 
 ```bash
-docker compose run --rm api npm run user:create-admin -- --name "Admin Teste" --email admin@esaf.local --password esaf123 --tenant esaf
+docker compose run --rm api npm run user:create-admin -- --name "Admin Teste" --email admin@demo.clubtenispro.com --password demo123 --tenant demo
 ```
 
-Resultado: sucesso. O script criou um admin local no tenant `esaf`.
+Resultado: sucesso. O script criou um admin local no tenant `demo`.
 
 ```bash
-curl -I --max-time 20 https://tenis.esaf.run.place/
+curl -I --max-time 20 https://tenis.clubtenispro.com/
 ```
 
 Resultado: sucesso em producao sem ignorar TLS.
@@ -63,13 +63,13 @@ strict-transport-security: max-age=31536000
 ```
 
 ```bash
-curl -i --max-time 20 https://tenis.esaf.run.place/api/health
+curl -i --max-time 20 https://tenis.clubtenispro.com/api/health
 ```
 
 Resultado: sucesso em producao sem ignorar TLS.
 
 ```json
-{"service":"esaf-api","status":"ok","timestamp":"2026-05-31T10:09:08.001Z"}
+{"service":"clubtenispro-api","status":"ok","timestamp":"2026-05-31T10:09:08.001Z"}
 ```
 
 ```bash
@@ -96,8 +96,8 @@ Resultado: sucesso local. A Evolution API v2.1.1 respondeu `status=200`.
 ## Verificacao GitHub Actions
 
 - Run `26708905100`: sucesso. Validou CI e deploy da fase inicial multitenant.
-- Run `26709074691`: sucesso. Validou `profiles` para Evolution e dominio `tenisevolution.esaf.run.place`.
-- Run `26709696276`: sucesso. Validou o ajuste de TLS para emitir certificado apenas para `tenis.esaf.run.place`.
+- Run `26709074691`: sucesso. Validou `profiles` para Evolution e dominio `tenisevolution.clubtenispro.com`.
+- Run `26709696276`: sucesso. Validou o ajuste de TLS para emitir certificado apenas para `tenis.clubtenispro.com`.
 
 Commit em producao apos a ultima verificacao:
 
@@ -115,14 +115,14 @@ Resultado observado:
 
 ```txt
 slug | primaryHost                | status
-esaf | esaf.tenis.esaf.run.place  | ACTIVE
+demo | demo.tenis.clubtenispro.com  | ACTIVE
 ```
 
 ## Falhas conhecidas
 
 - `npm --workspace apps/api run prisma:deploy` executado a partir do host falhou de forma intermitente contra `postgres.tenis-management-saas.orb.local`. A conectividade TCP chegou a responder, mas o Prisma devolveu `P1001` em nova tentativa.
 - A validacao final da migracao foi feita pelo caminho Docker (`api -> postgres`), que e o caminho usado em producao.
-- O primeiro teste TLS de `https://tenis.esaf.run.place` devolveu certificado de `esaf.run.place`. A causa foi `WEB_LETSENCRYPT_HOSTS` conter tambem `app.tenis.esaf.run.place`, `demo.tenis.esaf.run.place` e `esaf.tenis.esaf.run.place`, que ainda nao tinham DNS ativo. O companion falhou a emissao multi-domain e o nginx manteve o certificado antigo.
+- O primeiro teste TLS de `https://tenis.clubtenispro.com` devolveu certificado de `clubtenispro.com`. A causa foi `WEB_LETSENCRYPT_HOSTS` conter tambem `app.tenis.clubtenispro.com`, `demo.tenis.clubtenispro.com` e `demo.tenis.clubtenispro.com`, que ainda nao tinham DNS ativo. O companion falhou a emissao multi-domain e o nginx manteve o certificado antigo.
 
 ## Riscos residuais
 

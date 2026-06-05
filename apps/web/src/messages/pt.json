@@ -9,7 +9,8 @@
     "precos": "Preços",
     "demo": "Demo",
     "entrar": "Entrar",
-    "pedirDemo": "Pedir demo"
+    "pedirDemo": "Pedir demo",
+    "criarConta": "Criar conta"
   },
   "hero": {
     "badge": "SaaS para gestão de ténis",
@@ -17,9 +18,10 @@
     "titleHighlight": "de ponta a ponta",
     "titlePost": ".",
     "subtitle": "Alunos, mensalidades, recibos, presenças e comunicação automática por WhatsApp e email — numa só plataforma multi-organização, com os dados de cada clube isolados.",
-    "ctaPrimary": "Pedir demonstração",
+    "ctaPrimary": "Criar a minha escola",
     "ctaSecondary": "Ver preços",
-    "fineprint": "Sem cartão · Configuração em minutos · Cancela quando quiseres"
+    "ctaDemo": "Preferes ver primeiro? Pedir demonstração",
+    "fineprint": "Configuração em minutos · Sem fidelização · Cancela quando quiseres"
   },
   "dashboard": {
     "org": "Clube do Norte",
@@ -69,22 +71,15 @@
     "titulo": "Planos simples, que crescem contigo",
     "texto": "As mensalidades dos teus alunos são geridas dentro da plataforma — independentes do teu plano.",
     "popular": "Mais popular",
+    "trust": "Pagamento seguro via Stripe · Sem fidelização · Cancela quando quiseres",
     "items": [
       {
-        "nome": "Trial",
-        "preco": "€0",
-        "periodo": "14 dias",
-        "descricao": "Experimenta tudo, sem cartão.",
-        "cta": "Começar grátis",
-        "inclui": ["Até 30 alunos", "1 organização", "Recibos em PDF", "Presenças e dashboard", "Suporte por email"]
-      },
-      {
         "nome": "Clube",
-        "preco": "€49",
+        "preco": "€89,90",
         "periodo": "/ mês",
         "descricao": "Para escolas e clubes em operação.",
-        "cta": "Pedir demonstração",
-        "inclui": ["Alunos ilimitados", "WhatsApp + email automáticos", "Cobrança mensal automática", "Atividades e torneios", "Relatórios financeiros"]
+        "cta": "Começar agora",
+        "inclui": ["Até 50 alunos", "Até 3 courts", "WhatsApp + email automáticos", "Cobrança mensal automática", "Atividades e torneios", "Relatórios financeiros"]
       },
       {
         "nome": "Rede",

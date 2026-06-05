@@ -1,6 +1,12 @@
 import { API_BASE } from './utils';
 import type {
+  ClassEnrollment,
+  ClassException,
+  ClassExceptionType,
+  ClassSlot,
   CommunicationJob,
+  Court,
+  CourtLimits,
   TenantSettings,
   TenantSubscription,
   WhatsappConfig,
@@ -208,6 +214,144 @@ export async function sendWhatsappTest(number: string): Promise<{
   return apiRequest('/whatsapp/test', {
     method: 'POST',
     body: JSON.stringify({ number }),
+  });
+}
+
+// ---- Courts -------------------------------------------------------------
+
+export async function getCourts(): Promise<Court[]> {
+  return apiRequest('/courts');
+}
+
+export async function getCourtLimits(): Promise<CourtLimits> {
+  return apiRequest('/courts/limits');
+}
+
+export async function createCourt(input: {
+  name: string;
+  surface?: string;
+}): Promise<Court> {
+  return apiRequest('/courts', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateCourt(
+  id: string,
+  input: { name?: string; surface?: string; isActive?: boolean; sortOrder?: number },
+): Promise<Court> {
+  return apiRequest(`/courts/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function deleteCourt(id: string): Promise<void> {
+  return apiRequest(`/courts/${id}`, { method: 'DELETE' });
+}
+
+// ---- Class slots --------------------------------------------------------
+
+export type ClassSlotInput = {
+  courtId: string;
+  title: string;
+  dayOfWeek: number;
+  startMin: number;
+  endMin: number;
+  coachId?: string | null;
+  capacity?: number | null;
+};
+
+export async function getClassSlots(): Promise<ClassSlot[]> {
+  return apiRequest('/class-slots');
+}
+
+export async function createClassSlot(
+  input: ClassSlotInput,
+): Promise<{ id: string }> {
+  return apiRequest('/class-slots', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateClassSlot(
+  id: string,
+  input: Partial<ClassSlotInput> & { isActive?: boolean },
+): Promise<{ id: string }> {
+  return apiRequest(`/class-slots/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function deleteClassSlot(id: string): Promise<void> {
+  return apiRequest(`/class-slots/${id}`, { method: 'DELETE' });
+}
+
+// ---- Roster (enrollments) ----------------------------------------------
+
+export async function getEnrollments(slotId: string): Promise<ClassEnrollment[]> {
+  return apiRequest(`/class-slots/${slotId}/enrollments`);
+}
+
+export async function addEnrollment(
+  slotId: string,
+  studentId: string,
+): Promise<unknown> {
+  return apiRequest(`/class-slots/${slotId}/enrollments`, {
+    method: 'POST',
+    body: JSON.stringify({ studentId }),
+  });
+}
+
+export async function removeEnrollment(
+  slotId: string,
+  studentId: string,
+): Promise<void> {
+  return apiRequest(`/class-slots/${slotId}/enrollments/${studentId}`, {
+    method: 'DELETE',
+  });
+}
+
+// ---- Exceptions (overrides por data) -----------------------------------
+
+export async function getClassExceptions(
+  weekStart: string,
+): Promise<ClassException[]> {
+  return apiRequest(`/class-exceptions?weekStart=${weekStart}`);
+}
+
+export async function createClassException(
+  slotId: string,
+  input: {
+    date: string;
+    type: ClassExceptionType;
+    newCourtId?: string;
+    newDate?: string;
+    newStartMin?: number;
+    newEndMin?: number;
+    reason?: string;
+  },
+): Promise<unknown> {
+  return apiRequest(`/class-slots/${slotId}/exceptions`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function deleteClassException(id: string): Promise<void> {
+  return apiRequest(`/class-exceptions/${id}`, { method: 'DELETE' });
+}
+
+export async function markClassAttendance(
+  slotId: string,
+  input: { date: string; studentIds: string[] },
+): Promise<unknown> {
+  return apiRequest(`/class-slots/${slotId}/attendance`, {
+    method: 'POST',
+    body: JSON.stringify(input),
   });
 }
 

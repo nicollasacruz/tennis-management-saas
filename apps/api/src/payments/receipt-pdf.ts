@@ -250,7 +250,7 @@ function drawReceiptHeader(
   });
 
   const titleLines = wrapText(
-    'Recibo ESAF',
+    'Recibo',
     bold,
     compact ? 20 : 26,
     titleWidth
@@ -446,7 +446,7 @@ function renderSignatureBlock(context: ReceiptLayoutContext) {
   drawWrappedText(
     context.page,
     wrapText(
-      'Documento emitido eletronicamente pela ESAF e válido como comprovativo interno.',
+      'Documento emitido eletronicamente e válido como comprovativo interno.',
       context.regular,
       10,
       CONTENT_WIDTH / 2 - 34

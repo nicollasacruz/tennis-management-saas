@@ -97,11 +97,11 @@ export default function HomePage() {
 
 function BrandMark({ className = '' }: { className?: string }) {
   return (
-    <span
-      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent)] to-[#7fb80a] text-[var(--ink)] shadow-[0_2px_10px_rgba(63,102,7,0.25)] ${className}`}
-    >
-      <span className="text-[15px] font-black leading-none">TC</span>
-    </span>
+    <img
+      src="/brand-logo.png"
+      alt={BRAND}
+      className={`inline-block h-9 w-9 rounded-xl ${className}`}
+    />
   );
 }
 
@@ -140,13 +140,13 @@ async function SiteHeader() {
           >
             {t('entrar')}
           </Link>
-          <a
-            href="#demo"
+          <Link
+            href="/onboarding"
             className="group inline-flex items-center gap-2 rounded-lg bg-[var(--ink)] px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--ink-soft)]"
           >
-            {t('pedirDemo')}
+            {t('criarConta')}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </a>
+          </Link>
         </div>
       </div>
     </header>
@@ -173,13 +173,13 @@ async function Hero() {
           </h1>
           <p className="max-w-[52ch] text-[1.05rem] leading-[1.7] text-[var(--muted)]">{t('subtitle')}</p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a
-              href="#demo"
+            <Link
+              href="/onboarding"
               className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--ink)] px-6 py-3.5 text-[15px] font-bold text-white transition-colors hover:bg-[var(--ink-soft)]"
             >
               {t('ctaPrimary')}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </a>
+            </Link>
             <a
               href="#precos"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--cream)] px-6 py-3.5 text-[15px] font-bold text-[var(--ink)] transition-colors hover:border-[#bdd383] hover:bg-[var(--accent-soft)]"
@@ -187,6 +187,9 @@ async function Hero() {
               {t('ctaSecondary')}
             </a>
           </div>
+          <a href="#demo" className="text-[13px] font-semibold text-[var(--accent-strong)] underline-offset-4 hover:underline">
+            {t('ctaDemo')}
+          </a>
           <p className="font-mono text-[12px] uppercase tracking-[0.12em] text-[var(--muted)]">{t('fineprint')}</p>
         </Reveal>
 
@@ -360,9 +363,9 @@ async function Precos() {
     <section id="precos" className="scroll-mt-20 px-6 py-16 md:py-24">
       <div className="mx-auto flex max-w-[1280px] flex-col gap-12">
         <SectionHeading eyebrow={t('eyebrow')} titulo={t('titulo')} texto={t('texto')} />
-        <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-3">
+        <div className="mx-auto grid w-full max-w-[760px] grid-cols-1 items-stretch gap-5 lg:grid-cols-2">
           {planos.map((p, i) => {
-            const destaque = i === 1;
+            const destaque = i === 0;
             return (
               <Reveal
                 key={p.nome}
@@ -402,21 +405,30 @@ async function Precos() {
                   ))}
                 </ul>
 
-                <a
-                  href="#demo"
-                  className={`mt-auto inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[14px] font-bold transition-colors ${
-                    destaque
-                      ? 'bg-[var(--accent)] text-[var(--ink)] hover:bg-[#bfe46a]'
-                      : 'bg-[var(--ink)] text-white hover:bg-[var(--ink-soft)]'
-                  }`}
-                >
-                  {p.cta}
-                  <ArrowRight className="h-4 w-4" />
-                </a>
+                {destaque ? (
+                  <Link
+                    href="/onboarding"
+                    className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 text-[14px] font-bold text-[var(--ink)] transition-colors hover:bg-[#bfe46a]"
+                  >
+                    {p.cta}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : (
+                  <a
+                    href="#demo"
+                    className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--ink)] px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-[var(--ink-soft)]"
+                  >
+                    {p.cta}
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
+                )}
               </Reveal>
             );
           })}
         </div>
+        <p className="text-center font-mono text-[12px] uppercase tracking-[0.12em] text-[var(--muted)]">
+          {t('trust')}
+        </p>
       </div>
     </section>
   );

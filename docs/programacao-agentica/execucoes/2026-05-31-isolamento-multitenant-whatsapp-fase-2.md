@@ -9,7 +9,7 @@ Referência: `docs/programacao-agentica/planos/2026-05-31-isolamento-multitenant
 - Uniques agora por tenant: `Plan(tenantId,name)`, `Student(tenantId,email)`, `Receipt(tenantId,number)`. Mantido `Receipt.paymentId` único global.
 - Índices `tenantId` (e `(tenantId,status,scheduledAt)` nas filas).
 - Novo enum `WhatsappConnectionStatus` e modelo `TenantWhatsappConfig` (1-1 com Tenant).
-- Migração `20260531120000_add_tenant_scope_to_business`: coluna nullable → backfill `tenant_esaf` → NOT NULL → FK/índices, seguindo o padrão da migração da Fase 1.
+- Migração `20260531120000_add_tenant_scope_to_business`: coluna nullable → backfill `tenant_demo` → NOT NULL → FK/índices, seguindo o padrão da migração da Fase 1.
 
 ### Isolamento (backend)
 - `TenantContext` (AsyncLocalStorage) e `TenantContextMiddleware` global em `AppModule`.
@@ -28,13 +28,13 @@ Referência: `docs/programacao-agentica/planos/2026-05-31-isolamento-multitenant
 - Endpoints `GET /whatsapp/config` (autenticado) e `PUT /whatsapp/config` (ADMIN via `RolesGuard`/`@Roles`).
 - Endpoint `POST /whatsapp/connect` (ADMIN) cria/reutiliza a instância do tenant na Evolution API e devolve QR code para ligação.
 - `WhatsappService.sendDocument` resolve a instância (instanceName/token) do tenant atual; `EVOLUTION_API_BASE_URL` continua global (servidor partilhado).
-- Seed migra a instância global (env) para a config do esaf; `.env.example` documenta que `EVOLUTION_API_INSTANCE_ID/TOKEN` passam a ser fallback/seed. As variaveis antigas `EVOLUTION_GO_*` continuam suportadas apenas como transicao.
+- Seed migra a instância global (env) para a config do demo; `.env.example` documenta que `EVOLUTION_API_INSTANCE_ID/TOKEN` passam a ser fallback/seed. As variaveis antigas `EVOLUTION_GO_*` continuam suportadas apenas como transicao.
 
 ### Frontend
 - Nova página `/whatsapp` (painel): vê estado/instância, cria/atualiza QR code e envia teste. O utilizador não escolhe `instanceId` nem `instanceToken`; estas credenciais são geridas pela aplicação. Item de navegação adicionado.
 
 ### Endurecimento de segurança (repo público)
-- Removido o segredo JWT hardcoded público (`'esaf-secret-key-change-in-production'`). Novo `auth/jwt-secret.ts#resolveJwtSecret`: em produção **lança** se `JWT_SECRET` ausente; em dev usa fallback local. Usado por `auth.module.ts` (assinatura) e `jwt.strategy.ts` (verificação).
+- Removido o segredo JWT hardcoded público (`'demo-secret-key-change-in-production'`). Novo `auth/jwt-secret.ts#resolveJwtSecret`: em produção **lança** se `JWT_SECRET` ausente; em dev usa fallback local. Usado por `auth.module.ts` (assinatura) e `jwt.strategy.ts` (verificação).
 - `.env.example` documenta `JWT_SECRET` como obrigatório em produção.
 - **Ação de deploy**: garantir `JWT_SECRET` no `.env` do VPS antes do próximo deploy (caso contrário a API não arranca). Tokens emitidos com o fallback antigo deixam de ser válidos.
 

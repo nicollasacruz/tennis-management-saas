@@ -137,12 +137,12 @@ Garantir no `.env` remoto:
 
 ```env
 WEB_PORT=8081
-SAAS_ROOT_DOMAIN=tenis.esaf.run.place
-WEB_VIRTUAL_HOSTS=app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place
-WEB_LETSENCRYPT_HOSTS=app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place
+SAAS_ROOT_DOMAIN=tenis.clubtenispro.com
+WEB_VIRTUAL_HOSTS=app.tenis.clubtenispro.com,demo.tenis.clubtenispro.com,demo.tenis.clubtenispro.com
+WEB_LETSENCRYPT_HOSTS=app.tenis.clubtenispro.com,demo.tenis.clubtenispro.com,demo.tenis.clubtenispro.com
 LETSENCRYPT_EMAIL=nicollasacruz@gmail.com
-PUBLIC_API_BASE_URL=https://esaf.tenis.esaf.run.place/api
-EVOLUTION_API_VIRTUAL_HOST=tenisevolution.esaf.run.place
+PUBLIC_API_BASE_URL=https://demo.tenis.clubtenispro.com/api
+EVOLUTION_API_VIRTUAL_HOST=tenisevolution.clubtenispro.com
 ```
 
 - [ ] **Step 5: Verificar sem imprimir segredos**

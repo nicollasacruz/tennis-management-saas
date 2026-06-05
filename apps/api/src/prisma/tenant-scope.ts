@@ -23,6 +23,10 @@ export const TENANT_SCOPED_MODELS: ReadonlySet<string> = new Set([
   'EmailJob',
   'WhatsappJob',
   'SystemUser',
+  'Court',
+  'ClassSlot',
+  'ClassEnrollment',
+  'ClassException',
 ]);
 
 /**

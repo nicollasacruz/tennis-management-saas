@@ -4,7 +4,7 @@
  * produção, lança erro para nunca usar um segredo conhecido/público.
  */
 function resolveJwtSecret(): string {
-  const devFallbackSecret = 'esaf-dev-secret-not-for-development';
+  const devFallbackSecret = 'clubtenispro-dev-secret-not-for-production';
   const secret = process.env.JWT_SECRET?.trim();
 
   if (secret) {

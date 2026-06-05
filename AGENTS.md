@@ -1,6 +1,6 @@
-# ESAF Finance Desk
+# ClubTenisPro
 
-Sistema de gestão de pagamentos, presenças e emissão de recibos para a ESAF — Escola de Ténis. A aplicação é monolíngue em português: comentários de código, documentação e interface do utilizador estão todos em português de Portugal.
+Sistema de gestão de pagamentos, presenças e emissão de recibos para a Clube de Ténis Demo. A aplicação é monolíngue em português: comentários de código, documentação e interface do utilizador estão todos em português de Portugal.
 
 ## Visão geral da arquitetura
 
@@ -127,7 +127,7 @@ npm --workspace apps/api run prisma:generate
 npm --workspace apps/api run prisma:migrate
 npm --workspace apps/api run prisma:deploy    # Migrações em produção
 npm --workspace apps/api run prisma:seed
-npm --workspace apps/api run user:create-admin -- --name "Admin" --email admin@esaf.pt --password "senha"
+npm --workspace apps/api run user:create-admin -- --name "Admin" --email admin@demo.clubtenispro.com --password "senha"
 npm --workspace apps/api run payments:delete-month
 ```
 
@@ -227,12 +227,12 @@ Enums importantes:
 Quando um pagamento passa para o estado `PAID`, um recibo é criado automaticamente com número sequencial:
 
 ```
-Formato: ESAF-YYYYMM-SEQUENCE
-Exemplo: ESAF-202603-0001
+Formato: REC-YYYYMM-SEQUENCE
+Exemplo: REC-202603-0001
 ```
 
 O PDF é gerado com `pdf-lib` e inclui:
-- Logo da escola (carregado de URL externa via `ESAF_LOGO_URL`)
+- Logo da escola (carregado de URL externa via `BRAND_LOGO_URL`)
 - Dados de faturação (nome, NIF, telefone)
 - Descrição da cobrança
 - Bloco de assinatura
@@ -255,17 +255,17 @@ A data de vencimento é calculada com base na data de início da matrícula. Se 
 As variáveis obrigatórias estão definidas em `.env.example`:
 
 ```
-POSTGRES_DB=esaf
-POSTGRES_USER=esaf
+POSTGRES_DB=clubtenispro
+POSTGRES_USER=clubtenispro
 POSTGRES_PASSWORD=...
-DATABASE_URL=postgresql://.../esaf?schema=public
+DATABASE_URL=postgresql://.../clubtenispro?schema=public
 PORT=3000
 FRONTEND_ORIGIN=http://localhost:8080
 WEB_PORT=8080
 RUN_SEED_ON_BOOT=false
-RECEIPT_ISSUER=ESAF - Escola de Tenis
-RECEIPT_SIGNATURE_LABEL=Direção ESAF
-ESAF_LOGO_URL=https://...
+RECEIPT_ISSUER=Clube de Ténis Demo
+RECEIPT_SIGNATURE_LABEL=Direção Clube Demo
+BRAND_LOGO_URL=https://...
 ```
 
 No frontend (`apps/web/.env.local`):

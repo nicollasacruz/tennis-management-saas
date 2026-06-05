@@ -77,6 +77,7 @@ model Tenant {
   slug                  String                 @unique
   primaryHost           String                 @unique
   status                TenantStatus           @default(ACTIVE)
+  maxCourts             Int                    @default(3)
   logoUrl               String?
   receiptIssuer         String?
   receiptSignatureLabel String?
@@ -91,6 +92,10 @@ model Tenant {
   emailJobs             EmailJob[]
   whatsappJobs          WhatsappJob[]
   whatsappConfig        TenantWhatsappConfig?
+  courts                Court[]
+  classSlots            ClassSlot[]
+  classEnrollments      ClassEnrollment[]
+  classExceptions       ClassException[]
   stripeCustomerId      String?                @unique
   stripeSubscriptionId  String?                @unique
   createdAt             DateTime               @default(now())
@@ -193,6 +198,7 @@ model Student {
   payments                Payment[]
   attendances             Attendance[]
   statusHistory           StudentStatusHistory[]
+  classEnrollments        ClassEnrollment[]
   createdAt               DateTime                @default(now())
   updatedAt               DateTime                @updatedAt
 
@@ -201,18 +207,19 @@ model Student {
 }
 
 model SystemUser {
-  id        String         @id @default(cuid())
-  tenantId  String
-  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  fullName  String
-  email     String
-  password  String
-  phone     String?
-  role      SystemUserRole
-  notes     String?
-  isActive  Boolean        @default(true)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id          String         @id @default(cuid())
+  tenantId    String
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  fullName    String
+  email       String
+  password    String
+  phone       String?
+  role        SystemUserRole
+  notes       String?
+  isActive    Boolean        @default(true)
+  classSlots  ClassSlot[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -310,13 +317,16 @@ model Attendance {
   studentId      String
   attendanceDate DateTime
   type           AttendanceType @default(TENNIS)
+  classSlotId    String?
   student        Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classSlot      ClassSlot?     @relation(fields: [classSlotId], references: [id], onDelete: SetNull)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
   @@unique([studentId, attendanceDate, type])
   @@index([tenantId])
   @@index([attendanceDate])
+  @@index([classSlotId])
 }
 
 model Activity {
@@ -350,4 +360,88 @@ model StudentStatusHistory {
 
   @@index([tenantId])
   @@index([studentId, startedAt])
+}
+
+enum ClassExceptionType {
+  CANCELLED
+  MOVED
+}
+
+// Court (quadra). Limite por tenant em Tenant.maxCourts.
+model Court {
+  id         String      @id @default(cuid())
+  tenantId   String
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  name       String
+  surface    String?
+  isActive   Boolean     @default(true)
+  sortOrder  Int         @default(0)
+  classSlots ClassSlot[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+// Aula recorrente semanal num court. dayOfWeek 0=Dom..6=Sáb (JS getDay).
+// Hora em minutos desde 00:00 (startMin/endMin).
+model ClassSlot {
+  id          String            @id @default(cuid())
+  tenantId    String
+  tenant      Tenant            @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  courtId     String
+  court       Court             @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  coachId     String?
+  coach       SystemUser?       @relation(fields: [coachId], references: [id], onDelete: SetNull)
+  title       String
+  dayOfWeek   Int
+  startMin    Int
+  endMin      Int
+  capacity    Int?
+  isActive    Boolean           @default(true)
+  enrollments ClassEnrollment[]
+  exceptions  ClassException[]
+  attendances Attendance[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([tenantId])
+  @@index([courtId])
+}
+
+// Roster: aluno inscrito numa aula.
+model ClassEnrollment {
+  id          String    @id @default(cuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  classSlotId String
+  classSlot   ClassSlot @relation(fields: [classSlotId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([classSlotId, studentId])
+  @@index([tenantId])
+}
+
+// Override de uma ocorrência numa data concreta (cancelar ou mover).
+model ClassException {
+  id          String             @id @default(cuid())
+  tenantId    String
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  classSlotId String
+  classSlot   ClassSlot          @relation(fields: [classSlotId], references: [id], onDelete: Cascade)
+  date        DateTime
+  type        ClassExceptionType
+  newCourtId  String?
+  newDate     DateTime?
+  newStartMin Int?
+  newEndMin   Int?
+  reason      String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@unique([classSlotId, date])
+  @@index([tenantId])
 }

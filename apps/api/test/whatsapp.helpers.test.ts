@@ -14,8 +14,8 @@ assert.equal(normalizeWhatsappNumber('123'), null);
 const originalPayload = {
   number: '351910000001',
   type: 'document' as const,
-  url: 'https://esaf.run.place/api/public/receipts/token.pdf',
-  filename: 'recibo-ESAF-202605-0001.pdf',
+  url: 'https://clubtenispro.com/api/public/receipts/token.pdf',
+  filename: 'recibo-REC-202605-0001.pdf',
   caption: 'Olá Rita, segue em anexo o recibo da mensalidade.',
 };
 
