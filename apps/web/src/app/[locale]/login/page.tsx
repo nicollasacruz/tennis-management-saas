@@ -52,15 +52,11 @@ export default function LoginPage() {
 
       <div className="w-full max-w-[420px] bg-[rgba(252,253,247,0.98)] border border-[#d9e5c1] rounded-[20px] p-8 shadow-[0_16px_48px_rgba(76,95,46,0.14)]">
         <div className="text-center mb-6">
-          <span
-            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl text-[var(--ink)]"
-            style={{
-              background: 'linear-gradient(160deg, rgba(198, 240, 92, 0.95), rgba(127, 184, 10, 0.95))',
-              border: '1px solid rgba(74, 104, 16, 0.18)',
-            }}
-          >
-            <span className="text-2xl font-black leading-none">TC</span>
-          </span>
+          <img
+            src="/brand-logo.png"
+            alt={BRAND}
+            className="mx-auto mb-4 h-16 w-16 rounded-2xl"
+          />
           <h1 className="text-[1.6rem] font-extrabold mb-1">{BRAND}</h1>
           <p className="text-[#566857]">{t('subtitle')}</p>
         </div>

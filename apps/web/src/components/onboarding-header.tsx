@@ -5,11 +5,11 @@ import { BRAND } from '@/lib/brand';
 
 export function BrandMark({ className = '' }: { className?: string }) {
   return (
-    <span
-      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent)] to-[#7fb80a] text-[var(--ink)] shadow-[0_2px_10px_rgba(63,102,7,0.25)] ${className}`}
-    >
-      <span className="text-[15px] font-black leading-none">TC</span>
-    </span>
+    <img
+      src="/brand-logo.png"
+      alt={BRAND}
+      className={`inline-block h-9 w-9 rounded-xl ${className}`}
+    />
   );
 }
 
