@@ -71,9 +71,10 @@ export class AttendancesService {
         tenantId: this.tenantContext.getTenantIdOrThrow(),
         attendanceDate,
         studentId: dto.studentId,
-        type
+        type,
+        classSlotId: dto.classSlotId ?? null
       },
-      update: {},
+      update: dto.classSlotId ? { classSlotId: dto.classSlotId } : {},
       select: {
         attendanceDate: true,
         id: true,

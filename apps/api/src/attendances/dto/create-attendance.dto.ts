@@ -11,4 +11,8 @@ export class CreateAttendanceDto {
   @IsOptional()
   @IsEnum(AttendanceType)
   type?: AttendanceType;
+
+  @IsOptional()
+  @IsString()
+  classSlotId?: string;
 }

@@ -1,5 +1,5 @@
 {
-  "name": "esaf-api",
+  "name": "clubtenispro-api",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
-    "test": "tsx test/mail-queue.helpers.test.ts && tsx test/whatsapp.helpers.test.ts && tsx test/public-receipt-token.test.ts && tsx test/tenant-host.test.ts && tsx test/tenant-scope.test.ts && tsx test/evolution-api.service.test.ts && tsx test/whatsapp.service.test.ts && tsx test/onboarding.service.test.ts && tsx test/stripe-billing.provider.test.ts && tsx test/jwt-secret.test.ts && tsx test/platform-auth.service.test.ts && tsx test/platform.service.test.ts && tsx test/tenants-availability.test.ts && tsx test/jwt-strategy.test.ts",
+    "test": "tsx test/mail-queue.helpers.test.ts && tsx test/whatsapp.helpers.test.ts && tsx test/public-receipt-token.test.ts && tsx test/tenant-host.test.ts && tsx test/tenant-scope.test.ts && tsx test/evolution-api.service.test.ts && tsx test/whatsapp.service.test.ts && tsx test/onboarding.service.test.ts && tsx test/stripe-billing.provider.test.ts && tsx test/jwt-secret.test.ts && tsx test/platform-auth.service.test.ts && tsx test/platform.service.test.ts && tsx test/tenants-availability.test.ts && tsx test/jwt-strategy.test.ts && tsx test/schedule.test.ts",
     "payments:delete-month": "node prisma/delete-payments-month.js",
     "platform:create-owner": "node prisma/create-platform-owner.js",
     "user:create-admin": "node prisma/create-admin.js",

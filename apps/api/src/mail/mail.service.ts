@@ -48,7 +48,7 @@ export class MailService {
       this.config.get<string>('SMTP_FROM_EMAIL') ??
       this.config.get<string>('SMTP_FROM') ??
       user ??
-      'no-reply@clubetenisesaf.local';
+      'no-reply@clubtenispro.com';
     const fromName = this.config.get<string>('SMTP_FROM_NAME');
     this.fromAddress = fromName ? `"${fromName}" <${fromEmail}>` : fromEmail;
     this.replyTo = this.config.get<string>('SMTP_REPLY_TO') || undefined;

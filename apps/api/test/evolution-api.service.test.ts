@@ -30,7 +30,7 @@ async function main() {
         ok: true,
         json: async () => ({
           instance: {
-            instanceName: 'tenant-esaf',
+            instanceName: 'tenant-demo',
             instanceId: 'uuid-1',
             status: 'connecting',
           },
@@ -52,11 +52,11 @@ async function main() {
 
   try {
     const result = await makeService().createOrConnectInstance({
-      instanceName: 'tenant-esaf',
+      instanceName: 'tenant-demo',
       instanceToken: 'TOKEN',
     });
 
-    assert.equal(result.instanceName, 'tenant-esaf');
+    assert.equal(result.instanceName, 'tenant-demo');
     assert.equal(result.instanceId, 'uuid-1');
     assert.equal(result.instanceToken, 'TOKEN');
     assert.equal(result.status, 'CONNECTING');
@@ -64,7 +64,7 @@ async function main() {
     assert.equal(result.qrCodeText, 'qr-text');
     assert.equal(calls[0].url, 'http://evo/instance/fetchInstances');
     assert.equal(calls[1].url, 'http://evo/instance/create');
-    assert.equal(calls[2].url, 'http://evo/instance/connect/tenant-esaf');
+    assert.equal(calls[2].url, 'http://evo/instance/connect/tenant-demo');
     assert.equal((calls[0].init.headers as Record<string, string>).apikey, 'GLOBAL');
   } finally {
     global.fetch = originalFetch;
@@ -85,9 +85,9 @@ async function main() {
   }) as any;
 
   try {
-    await makeService().logoutInstance('tenant-esaf');
+    await makeService().logoutInstance('tenant-demo');
 
-    assert.equal(calls[0].url, 'http://evo/instance/logout/tenant-esaf');
+    assert.equal(calls[0].url, 'http://evo/instance/logout/tenant-demo');
     assert.equal(calls[0].init.method, 'DELETE');
     assert.equal((calls[0].init.headers as Record<string, string>).apikey, 'GLOBAL');
   } finally {
@@ -103,7 +103,7 @@ async function main() {
       json: async () => [
         {
           id: 'uuid-1',
-          name: 'tenant-esaf',
+          name: 'tenant-demo',
           connectionStatus: 'open',
           ownerJid: '351910607636@s.whatsapp.net',
           number: null,
@@ -114,7 +114,7 @@ async function main() {
   }) as any;
 
   try {
-    const status = await makeService().getInstanceStatus('tenant-esaf');
+    const status = await makeService().getInstanceStatus('tenant-demo');
 
     assert.deepEqual(status, {
       instanceId: 'uuid-1',

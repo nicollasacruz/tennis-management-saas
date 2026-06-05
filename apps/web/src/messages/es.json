@@ -9,7 +9,8 @@
     "precos": "Precios",
     "demo": "Demo",
     "entrar": "Entrar",
-    "pedirDemo": "Pedir demo"
+    "pedirDemo": "Pedir demo",
+    "criarConta": "Crear cuenta"
   },
   "hero": {
     "badge": "SaaS para gestión de tenis",
@@ -17,9 +18,10 @@
     "titleHighlight": "de principio a fin",
     "titlePost": ".",
     "subtitle": "Alumnos, cuotas, recibos, asistencia y comunicación automática por WhatsApp y email — en una sola plataforma multiorganización, con los datos de cada club aislados.",
-    "ctaPrimary": "Pedir demo",
+    "ctaPrimary": "Crear mi escuela",
     "ctaSecondary": "Ver precios",
-    "fineprint": "Sin tarjeta · Configuración en minutos · Cancela cuando quieras"
+    "ctaDemo": "¿Prefieres verlo primero? Pedir demo",
+    "fineprint": "Configuración en minutos · Sin permanencia · Cancela cuando quieras"
   },
   "dashboard": {
     "org": "Club del Norte",
@@ -69,22 +71,15 @@
     "titulo": "Planes simples que crecen contigo",
     "texto": "Las cuotas de tus alumnos se gestionan dentro de la plataforma — independientes de tu plan.",
     "popular": "Más popular",
+    "trust": "Pago seguro con Stripe · Sin permanencia · Cancela cuando quieras",
     "items": [
       {
-        "nome": "Trial",
-        "preco": "€0",
-        "periodo": "14 días",
-        "descricao": "Pruébalo todo, sin tarjeta.",
-        "cta": "Empezar gratis",
-        "inclui": ["Hasta 30 alumnos", "1 organización", "Recibos en PDF", "Asistencia y panel", "Soporte por email"]
-      },
-      {
         "nome": "Club",
-        "preco": "€49",
+        "preco": "€89,90",
         "periodo": "/ mes",
         "descricao": "Para escuelas y clubes en marcha.",
-        "cta": "Pedir demo",
-        "inclui": ["Alumnos ilimitados", "WhatsApp + email automáticos", "Cobro mensual automático", "Actividades y torneos", "Informes financieros"]
+        "cta": "Empezar ahora",
+        "inclui": ["Hasta 50 alumnos", "Hasta 3 courts", "WhatsApp + email automáticos", "Cobro mensual automático", "Actividades y torneos", "Informes financieros"]
       },
       {
         "nome": "Red",

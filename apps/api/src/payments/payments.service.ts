@@ -46,12 +46,12 @@ export class PaymentsService {
       issuer:
         tenant?.receiptIssuer ??
         this.configService.get<string>('RECEIPT_ISSUER') ??
-        'ESAF - Escola de Tenis',
-      logoUrl: tenant?.logoUrl ?? this.configService.get<string>('ESAF_LOGO_URL'),
+        'Clube de Ténis',
+      logoUrl: tenant?.logoUrl ?? this.configService.get<string>('BRAND_LOGO_URL'),
       signatureLabel:
         tenant?.receiptSignatureLabel ??
         this.configService.get<string>('RECEIPT_SIGNATURE_LABEL') ??
-        'Direção ESAF',
+        'Direção',
     };
   }
 
@@ -671,7 +671,7 @@ export class PaymentsService {
     const month = String(issuedAt.getMonth() + 1).padStart(2, '0');
     const sequence = String(currentCount + 1).padStart(4, '0');
 
-    return `ESAF-${year}${month}-${sequence}`;
+    return `REC-${year}${month}-${sequence}`;
   }
 
   private async withReceiptNumberingRetry<T>(fn: () => Promise<T>): Promise<T> {

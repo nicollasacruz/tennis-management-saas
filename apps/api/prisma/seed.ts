@@ -9,25 +9,25 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  const esafTenant = await prisma.tenant.upsert({
-    where: { slug: 'esaf' },
+  const demoTenant = await prisma.tenant.upsert({
+    where: { slug: 'demo' },
     update: {
-      name: 'ESAF - Escola de Tenis',
-      primaryHost: 'esaf.tenis.esaf.run.place',
-      receiptIssuer: 'ESAF - Escola de Tenis',
-      receiptSignatureLabel: 'Direcao ESAF'
+      name: 'Clube de Ténis Demo',
+      primaryHost: 'demo.clubtenispro.com',
+      receiptIssuer: 'Clube de Ténis Demo',
+      receiptSignatureLabel: 'Direção Clube Demo'
     },
     create: {
-      id: 'tenant_esaf',
-      name: 'ESAF - Escola de Tenis',
-      slug: 'esaf',
-      primaryHost: 'esaf.tenis.esaf.run.place',
-      receiptIssuer: 'ESAF - Escola de Tenis',
-      receiptSignatureLabel: 'Direcao ESAF'
+      id: 'tenant_demo',
+      name: 'Clube de Ténis Demo',
+      slug: 'demo',
+      primaryHost: 'demo.clubtenispro.com',
+      receiptIssuer: 'Clube de Ténis Demo',
+      receiptSignatureLabel: 'Direção Clube Demo'
     }
   });
 
-  // Migra a instância Evolution global (env) para a config por-tenant do esaf,
+  // Migra a instância Evolution global (env) para a config por-tenant do tenant demo,
   // preservando o WhatsApp atual. Servidor Evolution API continua partilhado.
   const evolutionInstanceId = (
     process.env.EVOLUTION_API_INSTANCE_ID ??
@@ -44,7 +44,7 @@ async function main() {
     evolutionInstanceToken !== 'CHANGE_ME';
 
   await prisma.tenantWhatsappConfig.upsert({
-    where: { tenantId: esafTenant.id },
+    where: { tenantId: demoTenant.id },
     update: hasEvolutionEnv
       ? {
           instanceId: evolutionInstanceId,
@@ -52,22 +52,22 @@ async function main() {
         }
       : {},
     create: {
-      tenantId: esafTenant.id,
-      instanceName: 'esaf',
+      tenantId: demoTenant.id,
+      instanceName: 'demo',
       instanceId: hasEvolutionEnv ? evolutionInstanceId : null,
       instanceToken: hasEvolutionEnv ? evolutionInstanceToken : null
     }
   });
 
   const basePlan = await prisma.plan.upsert({
-    where: { tenantId_name: { tenantId: esafTenant.id, name: 'Escola Base' } },
+    where: { tenantId_name: { tenantId: demoTenant.id, name: 'Escola Base' } },
     update: {
       description: 'Plano mensal com foco em evolução técnica.',
       monthlyFeeCents: 6500,
       sessionCount: 8
     },
     create: {
-      tenantId: esafTenant.id,
+      tenantId: demoTenant.id,
       name: 'Escola Base',
       description: 'Plano mensal com foco em evolução técnica.',
       monthlyFeeCents: 6500,
@@ -76,14 +76,14 @@ async function main() {
   });
 
   const competitionPlan = await prisma.plan.upsert({
-    where: { tenantId_name: { tenantId: esafTenant.id, name: 'Competição' } },
+    where: { tenantId_name: { tenantId: demoTenant.id, name: 'Competição' } },
     update: {
       description: 'Treino intensivo para atletas em competição.',
       monthlyFeeCents: 11000,
       sessionCount: 16
     },
     create: {
-      tenantId: esafTenant.id,
+      tenantId: demoTenant.id,
       name: 'Competição',
       description: 'Treino intensivo para atletas em competição.',
       monthlyFeeCents: 11000,
@@ -92,14 +92,14 @@ async function main() {
   });
 
   const kidsPlan = await prisma.plan.upsert({
-    where: { tenantId_name: { tenantId: esafTenant.id, name: 'Kids' } },
+    where: { tenantId_name: { tenantId: demoTenant.id, name: 'Kids' } },
     update: {
       description: 'Introdução lúdica ao ténis para crianças.',
       monthlyFeeCents: 5200,
       sessionCount: 6
     },
     create: {
-      tenantId: esafTenant.id,
+      tenantId: demoTenant.id,
       name: 'Kids',
       description: 'Introdução lúdica ao ténis para crianças.',
       monthlyFeeCents: 5200,
@@ -108,7 +108,7 @@ async function main() {
   });
 
   const joao = await prisma.student.upsert({
-    where: { tenantId_email: { tenantId: esafTenant.id, email: 'joao@esaf.local' } },
+    where: { tenantId_email: { tenantId: demoTenant.id, email: 'joao@demo.clubtenispro.com' } },
     update: {
       fullName: 'João Matos',
       currentPlanId: competitionPlan.id,
@@ -116,9 +116,9 @@ async function main() {
       taxId: '245778910'
     },
     create: {
-      tenantId: esafTenant.id,
+      tenantId: demoTenant.id,
       fullName: 'João Matos',
-      email: 'joao@esaf.local',
+      email: 'joao@demo.clubtenispro.com',
       phone: '+351 910 000 001',
       taxId: '245778910',
       currentPlanId: competitionPlan.id
@@ -126,7 +126,7 @@ async function main() {
   });
 
   const rita = await prisma.student.upsert({
-    where: { tenantId_email: { tenantId: esafTenant.id, email: 'rita@esaf.local' } },
+    where: { tenantId_email: { tenantId: demoTenant.id, email: 'rita@demo.clubtenispro.com' } },
     update: {
       fullName: 'Rita Nunes',
       currentPlanId: basePlan.id,
@@ -134,9 +134,9 @@ async function main() {
       taxId: '214889560'
     },
     create: {
-      tenantId: esafTenant.id,
+      tenantId: demoTenant.id,
       fullName: 'Rita Nunes',
-      email: 'rita@esaf.local',
+      email: 'rita@demo.clubtenispro.com',
       phone: '+351 910 000 002',
       taxId: '214889560',
       currentPlanId: basePlan.id
@@ -144,7 +144,7 @@ async function main() {
   });
 
   const ines = await prisma.student.upsert({
-    where: { tenantId_email: { tenantId: esafTenant.id, email: 'ines@esaf.local' } },
+    where: { tenantId_email: { tenantId: demoTenant.id, email: 'ines@demo.clubtenispro.com' } },
     update: {
       fullName: 'Inês Duarte',
       currentPlanId: kidsPlan.id,
@@ -155,9 +155,9 @@ async function main() {
       responsibleTaxId: '233445678'
     },
     create: {
-      tenantId: esafTenant.id,
+      tenantId: demoTenant.id,
       fullName: 'Inês Duarte',
-      email: 'ines@esaf.local',
+      email: 'ines@demo.clubtenispro.com',
       isMinor: true,
       phone: '+351 910 000 003',
       responsibleName: 'Carla Duarte',
@@ -168,16 +168,16 @@ async function main() {
   });
 
   const paymentCount = await prisma.payment.count({
-    where: { tenantId: esafTenant.id }
+    where: { tenantId: demoTenant.id }
   });
   const userCount = await prisma.systemUser.count({
-    where: { tenantId: esafTenant.id }
+    where: { tenantId: demoTenant.id }
   });
 
   if (paymentCount === 0) {
     await prisma.payment.create({
       data: {
-        tenantId: esafTenant.id,
+        tenantId: demoTenant.id,
         studentId: joao.id,
         planId: competitionPlan.id,
         description: 'Mensalidade Competição',
@@ -189,8 +189,8 @@ async function main() {
         status: PaymentStatus.PAID,
         receipt: {
           create: {
-            tenantId: esafTenant.id,
-            number: 'ESAF-202603-0001'
+            tenantId: demoTenant.id,
+            number: 'REC-202603-0001'
           }
         }
       }
@@ -198,7 +198,7 @@ async function main() {
 
     await prisma.payment.create({
       data: {
-        tenantId: esafTenant.id,
+        tenantId: demoTenant.id,
         studentId: rita.id,
         planId: basePlan.id,
         description: 'Mensalidade Escola Base',
@@ -211,7 +211,7 @@ async function main() {
 
     await prisma.payment.create({
       data: {
-        tenantId: esafTenant.id,
+        tenantId: demoTenant.id,
         studentId: ines.id,
         planId: kidsPlan.id,
         description: 'Mensalidade Kids',
@@ -224,30 +224,30 @@ async function main() {
   }
 
   if (userCount === 0 && process.env.NODE_ENV !== 'production') {
-    // Senha padrão para usuários de demonstração: "esaf123"
-    const defaultPassword = await bcrypt.hash('esaf123', 10);
+    // Senha padrão para usuários de demonstração: "demo1234"
+    const defaultPassword = await bcrypt.hash('demo1234', 10);
     
     await prisma.systemUser.createMany({
       data: [
         {
-          email: 'ricardo@esaf.local',
-          tenantId: esafTenant.id,
+          email: 'ricardo@demo.clubtenispro.com',
+          tenantId: demoTenant.id,
           password: defaultPassword,
           fullName: 'Ricardo Esteves',
           phone: '+351 910 100 001',
           role: SystemUserRole.HEAD_COACH
         },
         {
-          email: 'marta@esaf.local',
-          tenantId: esafTenant.id,
+          email: 'marta@demo.clubtenispro.com',
+          tenantId: demoTenant.id,
           password: defaultPassword,
           fullName: 'Marta Correia',
           phone: '+351 910 100 002',
           role: SystemUserRole.FINANCE
         },
         {
-          email: 'sofia@esaf.local',
-          tenantId: esafTenant.id,
+          email: 'sofia@demo.clubtenispro.com',
+          tenantId: demoTenant.id,
           password: defaultPassword,
           fullName: 'Sofia Lopes',
           phone: '+351 910 100 003',
@@ -257,21 +257,21 @@ async function main() {
     });
     
     console.log('✅ Utilizadores de demonstração criados:');
-    console.log('   - ricardo@esaf.local / esaf123 (HEAD_COACH)');
-    console.log('   - marta@esaf.local / esaf123 (FINANCE)');
-    console.log('   - sofia@esaf.local / esaf123 (DESK)');
+    console.log('   - ricardo@demo.clubtenispro.com / demo1234 (HEAD_COACH)');
+    console.log('   - marta@demo.clubtenispro.com / demo1234 (FINANCE)');
+    console.log('   - sofia@demo.clubtenispro.com / demo1234 (DESK)');
   }
 
   const activityCount = await prisma.activity.count({
-    where: { tenantId: esafTenant.id }
+    where: { tenantId: demoTenant.id }
   });
 
   if (activityCount === 0) {
     await prisma.activity.createMany({
       data: [
         {
-          tenantId: esafTenant.id,
-          title: 'I Torneio Juvenil ESAF',
+          tenantId: demoTenant.id,
+          title: 'I Torneio Juvenil Demo',
           description:
             'Arranque da época competitiva juvenil nas nossas instalações. Prova destinada aos mais jovens, com espírito formativo.',
           category: 'Juvenil',
@@ -279,8 +279,8 @@ async function main() {
           endDate: new Date('2026-04-26T00:00:00.000Z')
         },
         {
-          tenantId: esafTenant.id,
-          title: 'II Torneio Juvenil ESAF',
+          tenantId: demoTenant.id,
+          title: 'II Torneio Juvenil Demo',
           description:
             'Segunda etapa do circuito interno, consolidando a experiência competitiva dos atletas da formação.',
           category: 'Juvenil',
@@ -288,10 +288,10 @@ async function main() {
           endDate: new Date('2026-05-24T00:00:00.000Z')
         },
         {
-          tenantId: esafTenant.id,
+          tenantId: demoTenant.id,
           title: 'Barcelos Open',
           description:
-            'Prova de referência no calendário nacional, disputada nos courts da ESAF. Os nossos atletas competem frente a adversários de todo o país, no palco que chamam de casa.',
+            'Prova de referência no calendário nacional, disputada nos courts do clube. Os nossos atletas competem frente a adversários de todo o país, no palco que chamam de casa.',
           category: 'Nacional',
           startDate: new Date('2026-08-01T00:00:00.000Z')
         }
@@ -299,9 +299,113 @@ async function main() {
     });
 
     console.log('✅ Atividades de demonstração criadas:');
-    console.log('   - I Torneio Juvenil ESAF (25–26 Abr 2026)');
-    console.log('   - II Torneio Juvenil ESAF (23–24 Mai 2026)');
+    console.log('   - I Torneio Juvenil Demo (25–26 Abr 2026)');
+    console.log('   - II Torneio Juvenil Demo (23–24 Mai 2026)');
     console.log('   - Barcelos Open (Ago 2026)');
+  }
+
+  // Courts + horários de aulas (demo). dayOfWeek: 1=Seg, 2=Ter, 3=Qua.
+  // Horas em minutos desde 00:00 (1020=17:00, 1080=18:00, 1140=19:00, 1200=20:00).
+  const court1 = await prisma.court.upsert({
+    where: { tenantId_name: { tenantId: demoTenant.id, name: 'Court 1' } },
+    update: { surface: 'Terra batida', sortOrder: 0 },
+    create: {
+      tenantId: demoTenant.id,
+      name: 'Court 1',
+      surface: 'Terra batida',
+      sortOrder: 0
+    }
+  });
+
+  const court2 = await prisma.court.upsert({
+    where: { tenantId_name: { tenantId: demoTenant.id, name: 'Court 2' } },
+    update: { surface: 'Piso rápido', sortOrder: 1 },
+    create: {
+      tenantId: demoTenant.id,
+      name: 'Court 2',
+      surface: 'Piso rápido',
+      sortOrder: 1
+    }
+  });
+
+  const classSlotCount = await prisma.classSlot.count({
+    where: { tenantId: demoTenant.id }
+  });
+
+  if (classSlotCount === 0) {
+    const headCoach = await prisma.systemUser.findFirst({
+      where: { tenantId: demoTenant.id, role: SystemUserRole.HEAD_COACH },
+      select: { id: true }
+    });
+
+    const subTen = await prisma.classSlot.create({
+      data: {
+        tenantId: demoTenant.id,
+        courtId: court1.id,
+        title: 'SUB-10 Iniciação',
+        dayOfWeek: 1,
+        startMin: 1020,
+        endMin: 1080,
+        capacity: 6,
+        coachId: headCoach?.id ?? null
+      }
+    });
+
+    const competicao = await prisma.classSlot.create({
+      data: {
+        tenantId: demoTenant.id,
+        courtId: court1.id,
+        title: 'Competição',
+        dayOfWeek: 3,
+        startMin: 1080,
+        endMin: 1200,
+        capacity: 4,
+        coachId: headCoach?.id ?? null
+      }
+    });
+
+    const adultos = await prisma.classSlot.create({
+      data: {
+        tenantId: demoTenant.id,
+        courtId: court2.id,
+        title: 'Adultos',
+        dayOfWeek: 2,
+        startMin: 1140,
+        endMin: 1200,
+        capacity: 8
+      }
+    });
+
+    await prisma.classEnrollment.createMany({
+      data: [
+        { tenantId: demoTenant.id, classSlotId: subTen.id, studentId: ines.id },
+        { tenantId: demoTenant.id, classSlotId: competicao.id, studentId: joao.id },
+        { tenantId: demoTenant.id, classSlotId: adultos.id, studentId: rita.id }
+      ]
+    });
+
+    console.log('✅ Courts e horários de demonstração criados:');
+    console.log('   - Court 1 (Terra batida), Court 2 (Piso rápido)');
+    console.log('   - SUB-10 (Seg 17h), Competição (Qua 18h), Adultos (Ter 19h)');
+  }
+
+  // Super admin do SaaS (dono da plataforma, painel /gerencial). NÃO é um
+  // utilizador de tenant — vive no apex, auth separada. Apenas demo/dev: em
+  // produção, criar com `npm run platform:create-owner -- --email ... --password ...`.
+  if (process.env.NODE_ENV !== 'production') {
+    const ownerPassword = await bcrypt.hash('dono123', 10);
+    await prisma.platformUser.upsert({
+      where: { email: 'dono@clubtenispro.com' },
+      update: {},
+      create: {
+        email: 'dono@clubtenispro.com',
+        fullName: 'Dono ClubTenisPro',
+        password: ownerPassword
+      }
+    });
+
+    console.log('✅ Super admin do SaaS (demo) criado:');
+    console.log('   - dono@clubtenispro.com / dono123 (painel /gerencial)');
   }
 }
 

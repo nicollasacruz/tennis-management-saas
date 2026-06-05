@@ -6,7 +6,9 @@ import { ActivitiesModule } from './activities/activities.module';
 import { AppController } from './app.controller';
 import { AttendancesModule } from './attendances/attendances.module';
 import { AuthModule } from './auth/auth.module';
+import { ClassSlotsModule } from './class-slots/class-slots.module';
 import { CommunicationsModule } from './communications/communications.module';
+import { CourtsModule } from './courts/courts.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { MailModule } from './mail/mail.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
@@ -35,6 +37,8 @@ import { PrismaExceptionFilter } from './filters/prisma-exception.filter';
     ActivitiesModule,
     CommunicationsModule,
     AttendancesModule,
+    CourtsModule,
+    ClassSlotsModule,
     DashboardModule,
     PlansModule,
     StudentsModule,

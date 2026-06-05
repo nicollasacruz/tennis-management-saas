@@ -7,7 +7,7 @@ O servico antigo `evolution-go` foi substituido pelo container oficial `atendai/
 O dominio reservado para acesso direto ao servico continua separado da aplicacao SaaS:
 
 ```env
-EVOLUTION_API_VIRTUAL_HOST=tenisevolution.esaf.run.place
+EVOLUTION_API_VIRTUAL_HOST=tenisevolution.clubtenispro.com
 ```
 
 ## Decisao
@@ -28,7 +28,7 @@ EVOLUTION_API_BASE_URL=http://evolution-api:8080
 EVOLUTION_API_KEY=CHANGE_ME
 EVOLUTION_API_INSTANCE_ID=CHANGE_ME
 EVOLUTION_API_INSTANCE_TOKEN=CHANGE_ME
-EVOLUTION_API_VIRTUAL_HOST=tenisevolution.esaf.run.place
+EVOLUTION_API_VIRTUAL_HOST=tenisevolution.clubtenispro.com
 ```
 
 ## Compatibilidade temporaria

@@ -17,7 +17,7 @@ async function main() {
           ? {
               id: 'u_1',
               tenantId: 't_1',
-              email: 'a@esaf.pt',
+              email: 'a@demo.clubtenispro.com',
               fullName: 'Admin',
               role: 'ADMIN',
               isActive: true,
@@ -32,7 +32,7 @@ async function main() {
   const payload = {
     sub: 'u_1',
     tenantId: 't_1',
-    email: 'a@esaf.pt',
+    email: 'a@demo.clubtenispro.com',
     role: 'ADMIN',
     fullName: 'Admin',
   };

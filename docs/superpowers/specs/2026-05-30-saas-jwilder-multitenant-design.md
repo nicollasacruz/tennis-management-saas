@@ -2,7 +2,7 @@
 
 ## Contexto
 
-O produto atual e uma aplicacao monolingue em portugues para a gestao operacional e financeira da ESAF: alunos, planos, mensalidades, presencas, recibos PDF, equipa, dashboard e comunicacoes por email/WhatsApp.
+O produto atual e uma aplicacao monolingue em portugues para a gestao operacional e financeira da Clube Demo: alunos, planos, mensalidades, presencas, recibos PDF, equipa, dashboard e comunicacoes por email/WhatsApp.
 
 A transformacao pretendida e converter este produto numa plataforma SaaS para escolas e clubes, mantendo a VPS atual e o `jwilder/nginx-proxy` como reverse proxy central, porque existem outras aplicacoes no mesmo servidor que dependem desse modelo.
 
@@ -27,29 +27,29 @@ A transformacao pretendida e converter este produto numa plataforma SaaS para es
 Dominio base escolhido:
 
 ```txt
-tenis.esaf.run.place
+tenis.clubtenispro.com
 ```
 
 Subdominios iniciais:
 
 ```txt
-tenis.esaf.run.place
-app.tenis.esaf.run.place
-demo.tenis.esaf.run.place
-esaf.tenis.esaf.run.place
+tenis.clubtenispro.com
+app.tenis.clubtenispro.com
+demo.tenis.clubtenispro.com
+demo.tenis.clubtenispro.com
 ```
 
 Significado:
 
-- `tenis.esaf.run.place`: entrada publica inicial e host com TLS ativo no MVP.
-- `app.tenis.esaf.run.place`: portal central, login neutro ou futura listagem de tenants.
-- `demo.tenis.esaf.run.place`: ambiente de demonstracao.
-- `esaf.tenis.esaf.run.place`: tenant inicial que preserva os dados e operacao ESAF.
+- `tenis.clubtenispro.com`: entrada publica inicial e host com TLS ativo no MVP.
+- `app.tenis.clubtenispro.com`: portal central, login neutro ou futura listagem de tenants.
+- `demo.tenis.clubtenispro.com`: ambiente de demonstracao.
+- `demo.tenis.clubtenispro.com`: tenant inicial que preserva os dados e operacao Clube Demo.
 
 Preparacao futura:
 
 ```txt
-*.tenis.esaf.run.place
+*.tenis.clubtenispro.com
 ```
 
 A aplicacao deve resolver tenants por `Host` desde a primeira fase, mesmo que o proxy comece com uma lista fixa de hosts.
@@ -74,16 +74,16 @@ environment:
 Variaveis alvo no `.env.example`:
 
 ```env
-SAAS_ROOT_DOMAIN=tenis.esaf.run.place
-WEB_VIRTUAL_HOSTS=tenis.esaf.run.place,app.tenis.esaf.run.place,demo.tenis.esaf.run.place,esaf.tenis.esaf.run.place
-WEB_LETSENCRYPT_HOSTS=tenis.esaf.run.place
-LETSENCRYPT_EMAIL=admin@esaf.run.place
-EVOLUTION_API_VIRTUAL_HOST=tenisevolution.esaf.run.place
+SAAS_ROOT_DOMAIN=tenis.clubtenispro.com
+WEB_VIRTUAL_HOSTS=tenis.clubtenispro.com,app.tenis.clubtenispro.com,demo.tenis.clubtenispro.com,demo.tenis.clubtenispro.com
+WEB_LETSENCRYPT_HOSTS=tenis.clubtenispro.com
+LETSENCRYPT_EMAIL=admin@clubtenispro.com
+EVOLUTION_API_VIRTUAL_HOST=tenisevolution.clubtenispro.com
 ```
 
 Esta abordagem evita mexer nas outras apps da VPS. Para adicionar um novo tenant antes de wildcard, adiciona-se o subdominio a `WEB_VIRTUAL_HOSTS` e, apenas depois de o DNS existir e resolver para a VPS, adiciona-se tambem a `WEB_LETSENCRYPT_HOSTS`.
 
-Nota operacional importante: o `letsencrypt-nginx-proxy-companion` tenta emitir um unico certificado para todos os dominios em `LETSENCRYPT_HOST`. Se um dos dominios nao tiver DNS ativo, a emissao inteira falha. Por isso, no MVP, `WEB_LETSENCRYPT_HOSTS` fica limitado a `tenis.esaf.run.place`, que ja resolve para a VPS. Os subdominios preparados podem permanecer em `WEB_VIRTUAL_HOSTS` sem TLS ate o DNS ser criado.
+Nota operacional importante: o `letsencrypt-nginx-proxy-companion` tenta emitir um unico certificado para todos os dominios em `LETSENCRYPT_HOST`. Se um dos dominios nao tiver DNS ativo, a emissao inteira falha. Por isso, no MVP, `WEB_LETSENCRYPT_HOSTS` fica limitado a `tenis.clubtenispro.com`, que ja resolve para a VPS. Os subdominios preparados podem permanecer em `WEB_VIRTUAL_HOSTS` sem TLS ate o DNS ser criado.
 
 O Evolution fica pausado por defeito nesta fase. No Docker Compose, os servicos `evolution-api` e `evolution-postgres` devem ficar atras de um `profile` chamado `evolution`, para que `docker compose up -d --build` usado no deploy normal nao os religue automaticamente.
 
@@ -150,9 +150,9 @@ Saida:
 Regras:
 
 - Em producao, aceitar apenas hosts registados em `Tenant.primaryHost` ou numa tabela futura de dominios.
-- Em desenvolvimento, permitir fallback configurado por ambiente, por exemplo `DEFAULT_TENANT_SLUG=esaf`.
-- `app.tenis.esaf.run.place` pode funcionar como host neutro e exigir escolha de tenant no futuro.
-- `demo.tenis.esaf.run.place` deve resolver para o tenant de demonstracao.
+- Em desenvolvimento, permitir fallback configurado por ambiente, por exemplo `DEFAULT_TENANT_SLUG=demo`.
+- `app.tenis.clubtenispro.com` pode funcionar como host neutro e exigir escolha de tenant no futuro.
+- `demo.tenis.clubtenispro.com` deve resolver para o tenant de demonstracao.
 
 ## Autenticacao e autorizacao
 
@@ -160,7 +160,7 @@ O login passa a depender do tenant resolvido por hostname.
 
 Fluxo:
 
-1. Browser acede a `esaf.tenis.esaf.run.place`.
+1. Browser acede a `demo.tenis.clubtenispro.com`.
 2. Backend resolve `tenantId` pelo hostname.
 3. Login procura `SystemUser` por `(tenantId, email)`.
 4. JWT inclui `sub`, `tenantId`, `email`, `role` e `fullName`.
@@ -210,12 +210,12 @@ Isto evita que um ID valido de outro tenant seja acedido por acidente.
 
 A migracao inicial deve:
 
-1. Criar o tenant `esaf`.
+1. Criar o tenant `demo`.
 2. Associar todos os dados existentes a esse tenant.
 3. Criar ou ajustar hosts:
-   - `esaf.tenis.esaf.run.place`
+   - `demo.tenis.clubtenispro.com`
    - opcionalmente o host antigo durante transicao.
-4. Manter os recibos e numeros existentes dentro do tenant ESAF.
+4. Manter os recibos e numeros existentes dentro do tenant demo.
 
 Como o repositorio foi reiniciado do zero, a migracao deve ser feita com Prisma e testada localmente antes do deploy.
 
@@ -306,12 +306,12 @@ No MVP com subdominios conhecidos, o provisioning pode criar tenants apenas para
 
 Alteracoes esperadas:
 
-- Remover acoplamento visual forte a ESAF nas areas SaaS.
+- Remover acoplamento visual forte a Clube Demo nas areas SaaS.
 - Carregar branding por tenant: nome, logo e labels.
 - Login continua simples, mas tenant e inferido pelo host.
 - Area publica pode ter duas camadas:
-  - site comercial do SaaS em `app.tenis.esaf.run.place`;
-  - landing do clube em `esaf.tenis.esaf.run.place`.
+  - site comercial do SaaS em `app.tenis.clubtenispro.com`;
+  - landing do clube em `demo.tenis.clubtenispro.com`.
 
 Para reduzir risco, a primeira fase pode manter a UI atual e apenas introduzir tenant/branding por baixo.
 
@@ -321,9 +321,9 @@ Para reduzir risco, a primeira fase pode manter a UI atual e apenas introduzir t
 
 - Parametrizar `docker-compose.yml` com `WEB_VIRTUAL_HOSTS`, `WEB_LETSENCRYPT_HOSTS` e `SAAS_ROOT_DOMAIN`.
 - Criar `Tenant`.
-- Criar tenant inicial `esaf`.
+- Criar tenant inicial `demo`.
 - Adicionar `tenantId` aos modelos de negocio.
-- Migrar dados existentes para `esaf`.
+- Migrar dados existentes para `demo`.
 - Resolver tenant por hostname.
 - Incluir `tenantId` no JWT.
 - Filtrar queries por tenant nos modulos existentes.
@@ -360,18 +360,18 @@ Para reduzir risco, a primeira fase pode manter a UI atual e apenas introduzir t
 ## Riscos e mitigacoes
 
 - Vazamento de dados entre tenants: mitigar com filtros obrigatorios por `tenantId`, revisao de todas as queries e testes direcionados.
-- Quebra de login: mitigar mantendo fallback local `DEFAULT_TENANT_SLUG=esaf`.
+- Quebra de login: mitigar mantendo fallback local `DEFAULT_TENANT_SLUG=demo`.
 - Conflito com outras apps na VPS: mitigar mantendo `jwilder/nginx-proxy` e alterando apenas variaveis da stack deste produto.
 - Certificados wildcard: adiar para fase posterior; comecar com hosts explicitos.
 - Confusao entre pagamentos dos alunos e billing SaaS: manter dominios e modelos separados.
-- Migracao de dados existente: testar em copia local e garantir tenant `esaf` antes de deploy.
+- Migracao de dados existente: testar em copia local e garantir tenant `demo` antes de deploy.
 
 ## Criterios de aceitacao da Fase 1
 
-- `docker-compose.yml` nao contem hosts fixos ESAF para o web; usa variaveis.
-- `esaf.tenis.esaf.run.place` resolve para o tenant ESAF.
-- Login em host ESAF gera JWT com `tenantId`.
+- `docker-compose.yml` nao contem hosts fixos Clube Demo para o web; usa variaveis.
+- `demo.tenis.clubtenispro.com` resolve para o tenant demo.
+- Login em host Clube Demo gera JWT com `tenantId`.
 - Alunos, planos, pagamentos, presencas, recibos, equipa, atividades e jobs ficam isolados por tenant.
-- Dados existentes continuam acessiveis no tenant ESAF apos migracao.
+- Dados existentes continuam acessiveis no tenant demo apos migracao.
 - `.env.example` documenta os hosts iniciais e o dominio base.
 - O sistema continua funcional em desenvolvimento local com fallback de tenant.

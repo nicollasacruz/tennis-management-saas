@@ -321,3 +321,52 @@ export type Activity = {
   title: string;
   updatedAt: string;
 };
+
+// Courts e horários de aulas
+export type Court = {
+  id: string;
+  name: string;
+  surface: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  _count?: { classSlots: number };
+};
+
+export type CourtLimits = {
+  maxCourts: number;
+  activeCourts: number;
+};
+
+export type ClassSlot = {
+  id: string;
+  title: string;
+  courtId: string;
+  coachId: string | null;
+  dayOfWeek: number;
+  startMin: number;
+  endMin: number;
+  capacity: number | null;
+  court: { id: string; name: string };
+  coach: { id: string; fullName: string } | null;
+  _count: { enrollments: number };
+};
+
+export type ClassEnrollment = {
+  id: string;
+  studentId: string;
+  student: { id: string; fullName: string; isActive: boolean };
+};
+
+export type ClassExceptionType = 'CANCELLED' | 'MOVED';
+
+export type ClassException = {
+  id: string;
+  classSlotId: string;
+  date: string;
+  type: ClassExceptionType;
+  newCourtId: string | null;
+  newDate: string | null;
+  newStartMin: number | null;
+  newEndMin: number | null;
+  reason: string | null;
+};

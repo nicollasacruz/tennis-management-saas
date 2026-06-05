@@ -7,7 +7,7 @@ import {
 
 const originalPayload = {
   to: 'familia@example.com',
-  subject: 'Recibo ESAF',
+  subject: 'Recibo',
   text: 'Segue em anexo.',
   html: '<p>Segue em anexo.</p>',
   attachments: [

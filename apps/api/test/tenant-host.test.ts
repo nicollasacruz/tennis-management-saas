@@ -5,31 +5,31 @@ import {
   resolveRequestHost,
 } from '../src/tenants/tenant-host';
 
-assert.equal(normalizeTenantHost('ESAF.tenis.esaf.run.place:443'), 'esaf.tenis.esaf.run.place');
-assert.equal(normalizeTenantHost(' https://demo.tenis.esaf.run.place/ '), 'demo.tenis.esaf.run.place');
+assert.equal(normalizeTenantHost('DEMO.tenis.clubtenispro.com:443'), 'demo.tenis.clubtenispro.com');
+assert.equal(normalizeTenantHost(' https://demo.tenis.clubtenispro.com/ '), 'demo.tenis.clubtenispro.com');
 assert.equal(normalizeTenantHost(''), null);
 
 assert.equal(
   resolveRequestHost({
     host: 'api-interno:3000',
-    xForwardedHost: 'esaf.tenis.esaf.run.place, proxy.local',
+    xForwardedHost: 'demo.tenis.clubtenispro.com, proxy.local',
   }),
-  'esaf.tenis.esaf.run.place',
+  'demo.tenis.clubtenispro.com',
 );
 
 assert.equal(
-  extractTenantSlugFromHost('esaf.tenis.esaf.run.place', 'tenis.esaf.run.place'),
-  'esaf',
-);
-assert.equal(
-  extractTenantSlugFromHost('demo.tenis.esaf.run.place', 'tenis.esaf.run.place'),
+  extractTenantSlugFromHost('demo.tenis.clubtenispro.com', 'tenis.clubtenispro.com'),
   'demo',
 );
 assert.equal(
-  extractTenantSlugFromHost('tenis.esaf.run.place', 'tenis.esaf.run.place'),
+  extractTenantSlugFromHost('demo.tenis.clubtenispro.com', 'tenis.clubtenispro.com'),
+  'demo',
+);
+assert.equal(
+  extractTenantSlugFromHost('tenis.clubtenispro.com', 'tenis.clubtenispro.com'),
   null,
 );
 assert.equal(
-  extractTenantSlugFromHost('outro.exemplo.pt', 'tenis.esaf.run.place'),
+  extractTenantSlugFromHost('outro.exemplo.pt', 'tenis.clubtenispro.com'),
   null,
 );

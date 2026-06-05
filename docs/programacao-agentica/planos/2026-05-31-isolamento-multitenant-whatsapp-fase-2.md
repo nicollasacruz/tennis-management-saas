@@ -37,12 +37,12 @@ Excluído (próximas fases):
 
 ## Etapas
 
-1. Schema + migração `20260531120000_add_tenant_scope_to_business` (nullable → backfill `tenant_esaf` → NOT NULL → FK → índices) + `TenantWhatsappConfig` + enum `WhatsappConnectionStatus`.
+1. Schema + migração `20260531120000_add_tenant_scope_to_business` (nullable → backfill `tenant_demo` → NOT NULL → FK → índices) + `TenantWhatsappConfig` + enum `WhatsappConnectionStatus`.
 2. `TenantContext` + middleware + `TenantsService.tryResolveFromHeaders` + verificação host↔token no `JwtStrategy`.
 3. Extension (`tenant-scope.ts`) + provider `TENANT_DB` no `PrismaModule` + troca de injeção nos serviços de negócio + stamp explícito nas escritas.
 4. Filas: `tenantId` no enqueue + `run(job.tenantId)` no processamento; `communications.service` isolado + guard de tenant no retry.
 5. WhatsApp por tenant: `TenantWhatsappConfigService`, endpoints, `RolesGuard`/`@Roles`, resolução no `WhatsappService`.
-6. Seed (stamp + uniques compostas + config esaf a partir do env) + `.env.example`.
+6. Seed (stamp + uniques compostas + config demo a partir do env) + `.env.example`.
 7. Painel WhatsApp no `apps/web` (`/whatsapp`).
 8. Testes (`tenant-scope`, `whatsapp.service`) + typecheck + build + migração Docker + isolamento e2e.
 

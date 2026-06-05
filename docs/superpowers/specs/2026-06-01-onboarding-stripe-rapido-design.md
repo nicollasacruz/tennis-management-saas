@@ -20,7 +20,7 @@ Criar um onboarding de conversão rápida para novos clientes SaaS: recolher ape
 - Não guardar chaves Stripe no código; usar variáveis de ambiente.
 - Manter modo mock quando `STRIPE_SECRET_KEY` não estiver configurada.
 - A conta só fica activa depois da confirmação de pagamento.
-- O layout segue a UI existente: Manrope, fundo claro, verde ESAF, bordas suaves e conteúdo em português de Portugal.
+- O layout segue a UI existente: Manrope, fundo claro, verde da marca, bordas suaves e conteúdo em português de Portugal.
 
 ## Estados
 

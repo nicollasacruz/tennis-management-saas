@@ -6,4 +6,4 @@ Todas as alteracoes relevantes deste projeto serao documentadas neste ficheiro.
 
 ### Adicionado
 
-- Estado inicial do projeto ESAF Finance Desk.
+- Estado inicial do projeto ClubTenisPro.

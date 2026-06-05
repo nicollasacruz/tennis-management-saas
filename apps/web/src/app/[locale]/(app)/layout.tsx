@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/components/auth-provider';
-import { ESAF_LOGO } from '@/lib/utils';
+import { BRAND_LOGO } from '@/lib/utils';
 import {
   Building2,
   CalendarDays,
+  CalendarRange,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
@@ -31,6 +32,7 @@ const navGroups = [
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/presencas', label: 'Presenças', icon: CalendarDays },
+      { href: '/horarios', label: 'Horários', icon: CalendarRange },
       { href: '/alunos', label: 'Alunos', icon: Users },
       { href: '/planos', label: 'Planos', icon: ClipboardList },
       { href: '/atividades', label: 'Atividades', icon: Trophy },
@@ -120,7 +122,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   const activeRoute = navItems.find((item) => pathname.startsWith(item.href));
-  const tenantName = user.tenant?.name ?? 'ESAF';
+  const tenantName = user.tenant?.name ?? 'Clube';
 
   return (
     <div className="min-h-screen bg-[#f4f7ed] text-[#183223]">
@@ -138,7 +140,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <p className="truncate text-sm font-bold">{activeRoute?.label ?? tenantName}</p>
             <p className="truncate text-xs font-semibold text-[#566857]">{tenantName}</p>
           </div>
-          <img src={ESAF_LOGO} alt="ESAF" className="h-9 w-9 rounded-lg border border-[#d9e5c1]" />
+          <img src={BRAND_LOGO} alt="Logo" className="h-9 w-9 rounded-lg border border-[#d9e5c1]" />
         </div>
       </header>
 
@@ -150,8 +152,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         >
           <div className="flex h-16 items-center gap-3 border-b border-[#d9e5c1] px-4">
             <img
-              src={ESAF_LOGO}
-              alt="ESAF"
+              src={BRAND_LOGO}
+              alt="Logo"
               className="h-10 w-10 rounded-lg border border-[rgba(74,104,16,0.12)] bg-[rgba(198,240,92,0.25)] p-1"
             />
             {!collapsed && (
@@ -217,7 +219,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <aside className="fixed inset-y-0 left-0 z-[400] flex w-[292px] flex-col border-r border-[#d9e5c1] bg-[#fcfdf7] shadow-xl lg:hidden">
               <div className="flex h-16 items-center justify-between border-b border-[#d9e5c1] px-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <img src={ESAF_LOGO} alt="ESAF" className="h-10 w-10 rounded-lg" />
+                  <img src={BRAND_LOGO} alt="Logo" className="h-10 w-10 rounded-lg" />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-extrabold">{tenantName}</p>
                     <p className="truncate text-xs font-semibold text-[#566857]">{user.fullName}</p>

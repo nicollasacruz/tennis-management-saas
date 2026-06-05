@@ -6,7 +6,7 @@ import { Suspense, useState } from 'react';
 import { OnboardingHeader } from '@/components/onboarding-header';
 import { API_BASE, formatCurrency } from '@/lib/utils';
 
-const MONTHLY_PRICE_CENTS = 3990;
+const MONTHLY_PRICE_CENTS = 8990;
 
 function MockCheckout() {
   const params = useParams<{ locale: string }>();

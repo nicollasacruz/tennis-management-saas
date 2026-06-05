@@ -117,13 +117,13 @@ export default function LoginPage() {
             <p className="text-sm text-[#566857] font-semibold mb-3">{t('demoTitle')}</p>
             <ul className="flex flex-col gap-2">
               <li className="text-sm text-[#566857] font-mono bg-black/[0.03] px-3 py-2 rounded-lg">
-                ricardo@esaf.local / esaf123
+                ricardo@demo.clubtenispro.com / demo1234
               </li>
               <li className="text-sm text-[#566857] font-mono bg-black/[0.03] px-3 py-2 rounded-lg">
-                marta@esaf.local / esaf123
+                marta@demo.clubtenispro.com / demo1234
               </li>
               <li className="text-sm text-[#566857] font-mono bg-black/[0.03] px-3 py-2 rounded-lg">
-                sofia@esaf.local / esaf123
+                sofia@demo.clubtenispro.com / demo1234
               </li>
             </ul>
           </div>

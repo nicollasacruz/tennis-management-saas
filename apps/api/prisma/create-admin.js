@@ -33,7 +33,7 @@ function printUsage() {
 Cria ou promove um utilizador admin.
 
 Uso:
-  npm run user:create-admin -- --name "Admin ESAF" --email admin@esaf.pt --password "senha-forte"
+  npm run user:create-admin -- --name "Admin Demo" --email admin@demo.clubtenispro.com --password "senha-forte"
 
 Opções:
   --name       Nome completo do utilizador admin
@@ -41,7 +41,7 @@ Opções:
   --password   Password em texto plano; será guardada com hash bcrypt
   --phone      Telefone opcional
   --notes      Notas internas opcionais
-  --tenant     Slug do tenant; por omissão usa DEFAULT_TENANT_SLUG ou esaf
+  --tenant     Slug do tenant; por omissão usa DEFAULT_TENANT_SLUG ou demo
   --help       Mostra esta ajuda
 
 Também pode usar variáveis de ambiente:
@@ -94,7 +94,7 @@ function buildPrimaryHost(slug) {
     return explicitHost.toLowerCase();
   }
 
-  const rootDomain = process.env.SAAS_ROOT_DOMAIN?.trim() || 'tenis.esaf.run.place';
+  const rootDomain = process.env.SAAS_ROOT_DOMAIN?.trim() || 'tenis.clubtenispro.com';
   return `${slug}.${rootDomain}`.toLowerCase();
 }
 
@@ -119,7 +119,7 @@ async function main() {
   const tenantSlug = validateSlug(
     pick(args, 'tenant', 'ADMIN_TENANT_SLUG') ??
       process.env.DEFAULT_TENANT_SLUG ??
-      'esaf'
+      'demo'
   );
   const tenant = await prisma.tenant.upsert({
     where: { slug: tenantSlug },

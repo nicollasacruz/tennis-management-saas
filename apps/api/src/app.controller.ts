@@ -7,7 +7,7 @@ export class AppController {
   @Get()
   getHealth() {
     return {
-      service: 'esaf-api',
+      service: 'clubtenispro-api',
       status: 'ok',
       timestamp: new Date().toISOString()
     };
