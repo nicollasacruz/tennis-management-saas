@@ -15,7 +15,7 @@ import { API_BASE, formatCurrency } from '@/lib/utils';
 
 type SlugState = { available: boolean; reason?: string } | null;
 
-const MONTHLY_PRICE_CENTS = 8990;
+const MONTHLY_PRICE_CENTS = 4990;
 
 function normalizeSlug(value: string) {
   return value
