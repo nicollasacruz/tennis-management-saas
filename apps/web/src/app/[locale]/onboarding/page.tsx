@@ -35,7 +35,7 @@ function Field({
   label: string;
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm font-semibold text-[var(--ink)]">
+    <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-[var(--ink)]">
       {label}
       {children}
     </label>
@@ -155,10 +155,12 @@ export default function OnboardingPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="grid gap-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid min-w-0 gap-4 sm:grid-cols-2">
                 <Field label="Nome da escola">
                   <input
                     className={INPUT_CLASS}
+                    name="organization"
+                    autoComplete="organization"
                     value={schoolName}
                     onChange={(e) => setSchoolName(e.target.value)}
                     placeholder="Academia Lisboa"
@@ -193,10 +195,12 @@ export default function OnboardingPage() {
                 </Field>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid min-w-0 gap-4 sm:grid-cols-2">
                 <Field label="Nome do administrador">
                   <input
                     className={INPUT_CLASS}
+                    name="name"
+                    autoComplete="name"
                     value={adminName}
                     onChange={(e) => setAdminName(e.target.value)}
                     placeholder="Ana Silva"
@@ -208,6 +212,9 @@ export default function OnboardingPage() {
                   <input
                     type="email"
                     className={INPUT_CLASS}
+                    name="email"
+                    autoComplete="email"
+                    inputMode="email"
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
                     placeholder="ana@academia.pt"
@@ -220,6 +227,8 @@ export default function OnboardingPage() {
                 <input
                   type="password"
                   className={INPUT_CLASS}
+                  name="new-password"
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   minLength={8}
